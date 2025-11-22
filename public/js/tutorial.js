@@ -93,10 +93,12 @@ class Tutorial {
     start() {
         if (this.isActive) return;
         
+        console.log('[Tutorial] Starting tutorial...');
         this.isActive = true;
         this.currentStep = 0;
         this.createOverlay();
         this.createTooltip();
+        console.log('[Tutorial] Overlay and tooltip created');
         this.showStep(0);
     }
 
@@ -153,10 +155,13 @@ class Tutorial {
         const step = this.steps[stepIndex];
         if (!step) return;
 
+        console.log(`[Tutorial] Showing step ${stepIndex + 1}:`, step.title);
+
         // Switch to correct tab if needed
         if (step.showOnTab) {
             const tabButton = document.querySelector(`[data-tab="${step.showOnTab}"]`);
             if (tabButton && !tabButton.classList.contains('active')) {
+                console.log(`[Tutorial] Switching to tab: ${step.showOnTab}`);
                 tabButton.click();
                 // Wait for tab switch animation to complete
                 setTimeout(() => {
@@ -173,6 +178,8 @@ class Tutorial {
      * Render the step content (split from showStep for async tab switching)
      */
     renderStepContent(stepIndex, step) {
+        console.log(`[Tutorial] Rendering content for step ${stepIndex + 1}`);
+        
         // Clear previous highlights
         document.querySelectorAll('.tutorial-highlight').forEach(el => {
             el.classList.remove('tutorial-highlight');
@@ -182,6 +189,7 @@ class Tutorial {
         if (step.target) {
             const target = document.querySelector(step.target);
             if (target) {
+                console.log(`[Tutorial] Highlighting element:`, step.target);
                 target.classList.add('tutorial-highlight');
                 
                 // Add highlight styles if not exists
@@ -206,10 +214,13 @@ class Tutorial {
                 
                 // Scroll target into view
                 target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                console.warn(`[Tutorial] Target element not found:`, step.target);
             }
         }
 
         // Update tooltip content
+        console.log('[Tutorial] Updating tooltip content');
         this.updateTooltipContent(stepIndex, step);
     }
 
@@ -217,6 +228,13 @@ class Tutorial {
      * Update tooltip content and event listeners
      */
     updateTooltipContent(stepIndex, step) {
+        console.log('[Tutorial] Building tooltip HTML');
+        
+        if (!this.tooltip) {
+            console.error('[Tutorial] Tooltip element is missing!');
+            return;
+        }
+        
         this.tooltip.innerHTML = `
             <div style="margin-bottom: 1.5rem;">
                 <h3 style="margin: 0 0 1rem 0; font-size: 1.5rem; color: #667eea;">${step.title}</h3>
@@ -258,6 +276,8 @@ class Tutorial {
             </div>
         `;
 
+        console.log('[Tutorial] Tooltip HTML updated');
+
         // Position tooltip
         this.positionTooltip(step);
 
@@ -266,11 +286,17 @@ class Tutorial {
         const nextBtn = document.getElementById('tutorial-next');
         
         if (skipBtn) {
-            skipBtn.addEventListener('click', () => this.skip());
+            skipBtn.addEventListener('click', () => {
+                console.log('[Tutorial] Skip button clicked');
+                this.skip();
+            });
         }
         
         if (nextBtn) {
-            nextBtn.addEventListener('click', () => this.next());
+            nextBtn.addEventListener('click', () => {
+                console.log('[Tutorial] Next button clicked');
+                this.next();
+            });
         }
 
         // Add hover effects
@@ -285,6 +311,8 @@ class Tutorial {
                 btn.style.boxShadow = 'none';
             });
         });
+        
+        console.log('[Tutorial] Event listeners attached');
     }
 
     /**
