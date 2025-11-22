@@ -36,8 +36,9 @@ echo.
 
 REM Install dependencies
 echo [3/4] Installiere Abhaengigkeiten...
+echo Dies kann einige Minuten dauern...
 echo.
-call npm install
+npm install --loglevel=info
 if %ERRORLEVEL% NEQ 0 (
     echo.
     echo [FEHLER] Installation fehlgeschlagen!
