@@ -1,0 +1,29 @@
+node_modules/
+.env
+*.log
+.DS_Store
+.idea/
+dist/
+build/
+
+# Minecraft Server Files
+minecraft_servers/
+
+# Database Files
+data/servers.json
+data/users.json
+data/templates.json
+data/tasks.json
+data/webhooks.json
+
+# Logs
+logs/
+
+# Temporary Files
+*.tmp
+*.swp
+*~
+
+# OS Files
+Thumbs.db
+desktop.ini

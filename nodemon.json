@@ -1,0 +1,5 @@
+{
+  "watch": ["server/", "public/"],
+  "ignore": ["minecraft_servers/**", "data/**", "*.jar"],
+  "ext": "js,json"
+}

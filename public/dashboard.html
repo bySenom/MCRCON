@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Server Manager</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <div class="container">
+        <header style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1>🎮 Minecraft Server Manager</h1>
+                <p class="subtitle">Vollständige Server-Verwaltung</p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <span id="userInfo" style="color: var(--text-secondary);"></span>
+                <button id="logoutBtn" class="btn btn-danger" style="padding: 0.5rem 1rem;">
+                    🚪 Abmelden
+                </button>
+            </div>
+        </header>
+
+        <nav class="tab-nav">
+            <div class="tab-nav-left">
+                <button class="tab-button active" data-tab="dashboard">Dashboard</button>
+                <button class="tab-button" data-tab="server-details" style="display: none;">Server Details</button>
+                <button class="tab-button" data-tab="tasks">⏰ Geplante Tasks</button>
+                <button class="tab-button" data-tab="webhooks">🔔 Benachrichtigungen</button>
+                <button class="tab-button" data-tab="logs">📋 Logs</button>
+                <button class="tab-button" data-tab="plugins">Plugins/Mods</button>
+                <button class="tab-button" data-tab="rcon">RCON Console</button>
+            </div>
+            <div class="tab-nav-right">
+                <button class="tab-button tab-button-create" data-tab="create">➕ Neuer Server</button>
+            </div>
+        </nav>
+
+        <main>
+            <!-- Dashboard Tab -->
+            <section id="dashboard-tab" class="tab-content active">
+                <div class="dashboard-layout">
+                    <aside class="server-sidebar">
+                        <div class="sidebar-header">
+                            <h2>Meine Server</h2>
+                            <button id="refreshServers" class="btn-icon" title="Aktualisieren">🔄</button>
+                        </div>
+                        <div id="serverList" class="server-list">
+                            <!-- Server list items will be dynamically loaded here -->
+                            <div class="loading">Lade Server...</div>
+                        </div>
+                    </aside>
+                    <main class="dashboard-main">
+                        <div class="card">
+                            <h2>Willkommen zum Minecraft Server Manager</h2>
+                            <p style="color: var(--text-secondary); margin-top: 0.5rem;">Wähle einen Server aus der Liste links oder erstelle einen neuen Server.</p>
+                        </div>
+
+                        <!-- System Resource Monitoring -->
+                        <div class="card" style="margin-top: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                                <h2 style="margin: 0;">📊 System Ressourcen</h2>
+                                <button id="refreshSystemStats" class="btn-icon" title="Aktualisieren">🔄</button>
+                            </div>
+                            
+                            <!-- Stats Grid -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+                                <!-- CPU Card -->
+                                <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
+                                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                                        <span style="font-size: 2rem;">⚙️</span>
+                                        <div>
+                                            <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.875rem; text-transform: uppercase;">CPU Auslastung</h4>
+                                            <p id="systemCpuUsage" style="margin: 0.25rem 0 0 0; font-size: 1.5rem; font-weight: 600;">--</p>
+                                        </div>
+                                    </div>
+                                    <div style="background: var(--bg-primary); border-radius: 4px; height: 8px; overflow: hidden;">
+                                        <div id="systemCpuBar" style="background: linear-gradient(90deg, var(--primary-color), var(--info-color)); height: 100%; width: 0%; transition: width 0.3s;"></div>
+                                    </div>
+                                    <p id="systemCpuCores" style="margin: 0.5rem 0 0 0; color: var(--text-secondary); font-size: 0.875rem;">-- Kerne</p>
+                                </div>
+                                
+                                <!-- RAM Card -->
+                                <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
+                                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                                        <span style="font-size: 2rem;">🧠</span>
+                                        <div>
+                                            <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.875rem; text-transform: uppercase;">RAM Auslastung</h4>
+                                            <p id="systemRamUsage" style="margin: 0.25rem 0 0 0; font-size: 1.5rem; font-weight: 600;">--</p>
+                                        </div>
+                                    </div>
+                                    <div style="background: var(--bg-primary); border-radius: 4px; height: 8px; overflow: hidden;">
+                                        <div id="systemRamBar" style="background: linear-gradient(90deg, var(--success-color), var(--warning-color)); height: 100%; width: 0%; transition: width 0.3s;"></div>
+                                    </div>
+                                    <p id="systemRamTotal" style="margin: 0.5rem 0 0 0; color: var(--text-secondary); font-size: 0.875rem;">-- / -- GB</p>
+                                </div>
+                                
+                                <!-- Disk Card -->
+                                <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
+                                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                                        <span style="font-size: 2rem;">💾</span>
+                                        <div>
+                                            <h4 style="margin: 0; color: var(--text-secondary); font-size: 0.875rem; text-transform: uppercase;">Festplatten</h4>
+                                            <p id="systemDiskUsage" style="margin: 0.25rem 0 0 0; font-size: 1.5rem; font-weight: 600;">--</p>
+                                        </div>
+                                    </div>
+                                    <div style="background: var(--bg-primary); border-radius: 4px; height: 8px; overflow: hidden;">
+                                        <div id="systemDiskBar" style="background: linear-gradient(90deg, var(--info-color), var(--danger-color)); height: 100%; width: 0%; transition: width 0.3s;"></div>
+                                    </div>
+                                    <p id="systemDiskTotal" style="margin: 0.5rem 0 0 0; color: var(--text-secondary); font-size: 0.875rem;">-- / -- GB</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Charts -->
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                                <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
+                                    <h4 style="margin: 0 0 1rem 0; color: var(--text-secondary); font-size: 0.875rem; text-transform: uppercase;">CPU Historie (30s)</h4>
+                                    <div style="height: 200px; position: relative;">
+                                        <canvas id="systemCpuChart"></canvas>
+                                    </div>
+                                </div>
+                                <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
+                                    <h4 style="margin: 0 0 1rem 0; color: var(--text-secondary); font-size: 0.875rem; text-transform: uppercase;">RAM Historie (30s)</h4>
+                                    <div style="height: 200px; position: relative;">
+                                        <canvas id="systemRamChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card" style="margin-top: 20px;">
+                            <h2 style="margin-bottom: 1rem;">📋 Changelog</h2>
+                            
+                            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                                <!-- Version 3.6.0 -->
+                                <div class="changelog-entry">
+                                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                                        <span style="font-weight: 600; font-size: 1.1rem; color: var(--primary-color);">v3.6.0</span>
+                                        <span style="color: var(--text-secondary); font-size: 0.9rem;">November 2025</span>
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; gap: 0.5rem; padding-left: 1rem; border-left: 3px solid var(--primary-color);">
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>World Management System implementiert</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>World Download als ZIP (Overworld, Nether, The End)</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>World Reset mit automatischem Backup</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>Gamerule Editor mit 35 Minecraft-Gamerules</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>World Border Konfiguration (Größe + Center)</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>Welt-Informationen (Größe, Dateien, Änderungsdatum)</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>Multi-Dimension Support (Overworld, Nether, End)</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>ZIP-Stream Download für große Welten</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Version 3.5.0 -->
+                                <div class="changelog-entry">
+                                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                                        <span style="font-weight: 600; font-size: 1.1rem; color: var(--primary-color);">v3.5.0</span>
+                                        <span style="color: var(--text-secondary); font-size: 0.9rem;">November 2025</span>
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; gap: 0.5rem; padding-left: 1rem; border-left: 3px solid var(--primary-color);">
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>Live Logs Viewer mit Echtzeit-Anzeige</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>Log-Level Filter (INFO/WARN/ERROR/FATAL/DEBUG)</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>Volltext-Suche in Server-Logs</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>Log-Datei-Auswahl (latest.log + Archive)</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>Log-Statistiken (Größe, Zeilen, Level-Verteilung)</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>Export zu Textdatei mit Filterung</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>Auto-Refresh (5s) und Auto-Scroll</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>Syntax-Highlighting mit farbcodierten Log-Levels</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--danger-color);">🐛</span>
+                                            <span>Fix: Server-Details Sub-Tabs jetzt sichtbar</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--danger-color);">🐛</span>
+                                            <span>Fix: Doppelter Server-Start behoben</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Version 3.4.0 -->
+                                <div class="changelog-entry">
+                                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                                        <span style="font-weight: 600; font-size: 1.1rem; color: var(--primary-color);">v3.4.0</span>
+                                        <span style="color: var(--text-secondary); font-size: 0.9rem;">November 2025</span>
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; gap: 0.5rem; padding-left: 1rem; border-left: 3px solid var(--primary-color);">
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>Discord & Webhook Benachrichtigungen</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>Discord Embeds mit farbcodierten Events</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>7 Event-Typen: Start, Stop, Crash, Join, Leave, Backup</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>Generische Webhook-Unterstützung (JSON POST)</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>Spieler Join/Leave Event-Erkennung via Console Parsing</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>Test-Button für sofortige Webhook-Überprüfung</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>Server-Filter: Alle Server oder spezifischer Server</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Version 3.3.0 -->
+                                <div class="changelog-entry">
+                                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                                        <span style="font-weight: 600; font-size: 1.1rem; color: var(--primary-color);">v3.3.0</span>
+                                        <span style="color: var(--text-secondary); font-size: 0.9rem;">November 2025</span>
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; gap: 0.5rem; padding-left: 1rem; border-left: 3px solid var(--primary-color);">
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>Scheduled Tasks & Automation System</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>Cron-basierte Task-Planung (node-cron)</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>5 Task-Typen: Backup, Restart, Start, Stop, Command</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>Ausführungs-Log mit Erfolgs-/Fehlerstatus</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>Task CRUD Operationen via REST API</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>Manuelle Task-Ausführung (Execute Now)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Version 3.2.0 -->
+                                <div class="changelog-entry">
+                                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                                        <span style="font-weight: 600; font-size: 1.1rem; color: var(--primary-color);">v3.2.0</span>
+                                        <span style="color: var(--text-secondary); font-size: 0.9rem;">November 2025</span>
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; gap: 0.5rem; padding-left: 1rem; border-left: 3px solid var(--primary-color);">
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>System Resource Monitoring Dashboard</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>Live CPU/RAM/Disk Usage Charts</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>30-Sekunden Historie mit Auto-Refresh</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>Farbcodierte Progress Bars mit Schwellenwerten</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>System Stats API Endpoint (/api/system/stats)</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>Chart.js Integration für Echtzeit-Visualisierung</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Version 3.1.0 -->
+                                <div class="changelog-entry">
+                                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                                        <span style="font-weight: 600; font-size: 1.1rem; color: var(--primary-color);">v3.1.0</span>
+                                        <span style="color: var(--text-secondary); font-size: 0.9rem;">November 2025</span>
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; gap: 0.5rem; padding-left: 1rem; border-left: 3px solid var(--primary-color);">
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>WebSocket Real-Time Console Streaming</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>WebSocket Authentifizierung mit JWT</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>Live Server-Status Updates ohne Polling</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>Quick-Command Buttons (list, save-all, say, stop)</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>Console mit Enter-Taste für Befehle</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>Auto-Subscribe zu Servern bei Auswahl</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>Crash-Benachrichtigungen mit Exit-Code</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>API Endpoint Protection (25+ Endpoints)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Version 3.0.0 -->
+                                <div class="changelog-entry">
+                                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                                        <span style="font-weight: 600; font-size: 1.1rem; color: var(--text-secondary);">v3.0.0</span>
+                                        <span style="color: var(--text-secondary); font-size: 0.9rem;">November 2025</span>
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; gap: 0.5rem; padding-left: 1rem; border-left: 3px solid var(--border-color);">
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>Server Templates System (8 Presets + Custom)</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>Backup & Restore System mit ZIP-Kompression</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>Multi-User Authentication (JWT + bcrypt)</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>Rollen-System (Admin & User)</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>File Explorer mit Editor-Funktionen</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>Card-basierte Template-Auswahl</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>Two-Step Template Wizard</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>Login/Register UI mit Dark Theme</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Version 2.0.0 -->
+                                <div class="changelog-entry">
+                                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                                        <span style="font-weight: 600; font-size: 1.1rem; color: var(--text-secondary);">v2.0.0</span>
+                                        <span style="color: var(--text-secondary); font-size: 0.9rem;">November 2025</span>
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; gap: 0.5rem; padding-left: 1rem; border-left: 3px solid var(--border-color);">
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>Live Console mit WebSocket-Streaming</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>Echtzeit Resource Monitoring (CPU, RAM, TPS)</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>Chart.js Visualisierung mit dynamischer Skalierung</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>Plugin/Mod Manager mit Modrinth & Spigot Integration</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>Sidebar Navigation mit Server-Liste</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>Verbessertes UI/UX Design</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--info-color);">🔧</span>
+                                            <span>Multi-Core CPU Unterstützung</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--warning-color);">🐛</span>
+                                            <span>Plugin Installation Fix (Modrinth files array)</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Version 1.0.0 -->
+                                <div class="changelog-entry">
+                                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                                        <span style="font-weight: 600; font-size: 1.1rem; color: var(--text-secondary);">v1.0.0</span>
+                                        <span style="color: var(--text-secondary); font-size: 0.9rem;">Oktober 2025</span>
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; gap: 0.5rem; padding-left: 1rem; border-left: 3px solid var(--border-color);">
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>Server Verwaltung (Erstellen, Starten, Stoppen)</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>Vanilla, Paper, Fabric Support</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>RCON Console Integration</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>Server Properties Editor</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-color);">✨</span>
+                                            <span>File Explorer & Editor</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </section>
+
+            <!-- Create Server Tab -->
+            <section id="create-tab" class="tab-content">
+                <div class="card">
+                    <h2>Neuen Server erstellen</h2>
+                    
+                    <!-- Template Selection Step -->
+                    <div id="templateSelectionStep" style="margin-bottom: 2rem;">
+                        <h3 style="margin-bottom: 1rem;">Template wählen</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Wähle eine vorkonfigurierte Server-Vorlage oder erstelle einen benutzerdefinierten Server.</p>
+                        <div id="templateCards" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+                            <!-- Template cards will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Server Configuration Step -->
+                    <div id="serverConfigStep" style="display: none; max-width: 600px; margin: 0 auto;">
+                        <div id="selectedTemplateInfo" style="margin-bottom: 1.5rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px; border-left: 4px solid var(--primary-color);">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div style="flex: 1;">
+                                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                                        <span id="selectedTemplateIcon" style="font-size: 2rem;"></span>
+                                        <div>
+                                            <h4 id="selectedTemplateName" style="margin: 0;"></h4>
+                                            <p id="selectedTemplateDesc" style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;"></p>
+                                        </div>
+                                    </div>
+                                    <div id="selectedTemplatePlugins" style="margin-top: 0.75rem; display: none;">
+                                        <small style="color: var(--text-secondary); font-weight: 600;">Empfohlene Plugins:</small>
+                                        <div id="selectedTemplatePluginsList" style="display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.5rem;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="button" onclick="backToTemplateSelection()" class="btn btn-secondary" style="margin-bottom: 1.5rem;">
+                            ← Zurück zur Template-Auswahl
+                        </button>
+
+                        <form id="createServerForm" class="create-form">
+                        <div class="form-group">
+                            <label for="serverName">Server Name:</label>
+                            <input type="text" id="serverName" placeholder="Mein Minecraft Server" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="serverType">Server Typ:</label>
+                            <select id="serverType" required>
+                                <option value="">Typ wählen...</option>
+                                <optgroup label="🎮 Minecraft Server">
+                                    <option value="vanilla">Vanilla (Original Minecraft)</option>
+                                    <option value="paper">Paper (Performance & Plugins)</option>
+                                    <option value="fabric">Fabric (Mods)</option>
+                                    <option value="forge">Forge (Mods) - Manuell</option>
+                                    <option value="spigot">Spigot (Plugins) - Manuell</option>
+                                </optgroup>
+                                <optgroup label="🌐 Proxy Server">
+                                    <option value="bungeecord">BungeeCord (Legacy Proxy)</option>
+                                    <option value="waterfall">Waterfall (BungeeCord Fork)</option>
+                                    <option value="velocity">Velocity (Modern Proxy)</option>
+                                </optgroup>
+                            </select>
+                            <small class="help-text">Paper empfohlen für Plugins, Velocity für moderne Proxy-Netzwerke</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="serverVersion">Minecraft Version:</label>
+                            <select id="serverVersion" required>
+                                <option value="">Typ zuerst wählen...</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="serverHost">Server Host/IP:</label>
+                            <input type="text" id="serverHost" placeholder="0.0.0.0 oder play.example.com" value="0.0.0.0" required>
+                            <small class="help-text">0.0.0.0 = Alle Schnittstellen. Für Online-Server: Deine Domain oder öffentliche IP</small>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="serverPort">Server Port:</label>
+                                <input type="number" id="serverPort" value="25565" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="serverMemory">RAM:</label>
+                                <select id="serverMemory" required>
+                                    <option value="1G">1 GB</option>
+                                    <option value="2G" selected>2 GB</option>
+                                    <option value="4G">4 GB</option>
+                                    <option value="6G">6 GB</option>
+                                    <option value="8G">8 GB</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="rconPortCreate">RCON Port:</label>
+                            <input type="number" id="rconPortCreate" value="25575" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="rconPasswordCreate">RCON Passwort:</label>
+                            <input type="password" id="rconPasswordCreate" placeholder="Sicheres Passwort" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-large">
+                            🚀 Server erstellen
+                        </button>
+                        <div id="createStatus" class="status-message"></div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Server Details Tab -->
+            <section id="server-details-tab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2 id="serverDetailsName">Server Details</h2>
+                            <p id="serverDetailsInfo" style="color: var(--text-secondary); margin-top: 0.5rem;"></p>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="backToDashboard" class="btn btn-secondary">← Zurück</button>
+                            <button id="serverDetailsStart" class="btn btn-primary" style="display: none;">▶ Starten</button>
+                            <button id="serverDetailsStop" class="btn btn-danger" style="display: none;">⏹ Stoppen</button>
+                            <button id="serverDetailsRestart" class="btn btn-secondary" style="display: none;">🔄 Neustarten</button>
+                            <button id="serverDetailsDelete" class="btn btn-danger" style="background: var(--danger-color);">🗑️ Löschen</button>
+                        </div>
+                    </div>
+
+                    <!-- Sub-tabs for server details -->
+                    <div class="server-sub-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; flex-wrap: wrap;">
+                        <button class="server-sub-tab active" data-subtab="overview">Übersicht</button>
+                        <button class="server-sub-tab" data-subtab="console">Live Console</button>
+                        <button class="server-sub-tab" data-subtab="settings">Einstellungen</button>
+                        <button class="server-sub-tab" data-subtab="plugins">Plugins/Mods</button>
+                        <button class="server-sub-tab" data-subtab="files">Dateien</button>
+                        <button class="server-sub-tab" data-subtab="backups">💾 Backups</button>
+                        <button class="server-sub-tab" data-subtab="network" style="display: none;">🌐 Netzwerk</button>
+                        <button class="server-sub-tab" data-subtab="world">🌍 World</button>
+                        <button class="server-sub-tab" data-subtab="players">👥 Players</button>
+                    </div>
+
+                    <!-- Overview Sub-tab -->
+                    <div id="overview-subtab" class="server-subtab-content active">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                            <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
+                                <h3 style="margin: 0 0 0.5rem 0; color: var(--text-secondary); font-size: 0.875rem; text-transform: uppercase;">Status</h3>
+                                <p id="detailStatus" style="margin: 0; font-size: 1.5rem; font-weight: 600;"></p>
+                            </div>
+                            <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
+                                <h3 style="margin: 0 0 0.5rem 0; color: var(--text-secondary); font-size: 0.875rem; text-transform: uppercase;">Server Typ</h3>
+                                <p id="detailType" style="margin: 0; font-size: 1.5rem; font-weight: 600;"></p>
+                            </div>
+                            <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
+                                <h3 style="margin: 0 0 0.5rem 0; color: var(--text-secondary); font-size: 0.875rem; text-transform: uppercase;">Version</h3>
+                                <p id="detailVersion" style="margin: 0; font-size: 1.5rem; font-weight: 600;"></p>
+                            </div>
+                            <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
+                                <h3 style="margin: 0 0 0.5rem 0; color: var(--text-secondary); font-size: 0.875rem; text-transform: uppercase;">Port</h3>
+                                <p id="detailPort" style="margin: 0; font-size: 1.5rem; font-weight: 600;"></p>
+                            </div>
+                        </div>
+                        
+                        <!-- Resource Monitoring Charts -->
+                        <div id="resourceMonitoring" style="display: none; margin-top: 2rem;">
+                            <h3 style="margin: 0 0 1.5rem 0; color: var(--text-primary);">Ressourcennutzung</h3>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                                <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
+                                    <h4 style="margin: 0 0 1rem 0; color: var(--text-secondary); font-size: 0.875rem; text-transform: uppercase;">CPU Auslastung</h4>
+                                    <div style="height: 250px; position: relative;">
+                                        <canvas id="cpuChart"></canvas>
+                                    </div>
+                                </div>
+                                <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
+                                    <h4 style="margin: 0 0 1rem 0; color: var(--text-secondary); font-size: 0.875rem; text-transform: uppercase;">RAM Auslastung</h4>
+                                    <div style="height: 250px; position: relative;">
+                                        <canvas id="ramChart"></canvas>
+                                    </div>
+                                </div>
+                                <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
+                                    <h4 style="margin: 0 0 1rem 0; color: var(--text-secondary); font-size: 0.875rem; text-transform: uppercase;">Server TPS</h4>
+                                    <div style="height: 250px; position: relative;">
+                                        <canvas id="tpsChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Console Sub-tab -->
+                    <div id="console-subtab" class="server-subtab-content">
+                        <div style="background: var(--console-bg); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h3 style="margin: 0;">Live Console Output</h3>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="btn-sm btn-secondary" onclick="ServerDetails.clearConsole()">🗑 Löschen</button>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                        <input type="checkbox" id="autoScrollCheckbox" checked>
+                                        <span style="color: var(--text-secondary); font-size: 0.875rem;">Auto-scroll</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div id="liveConsole" style="background: #000; color: #0f0; font-family: 'Courier New', monospace; padding: 1rem; border-radius: 4px; height: 400px; overflow-y: auto; font-size: 0.875rem; line-height: 1.4;"></div>
+                        </div>
+                        
+                        <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h3 style="margin: 0;">Befehl senden</h3>
+                                <button id="clearConsole" class="btn-sm btn-secondary" title="Console leeren">🗑️ Leeren</button>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+                                <input type="text" id="consoleCommand" placeholder="Befehl eingeben (z.B. list, say Hello) - Enter zum Senden" style="flex: 1; padding: 0.75rem; background: var(--console-bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text-primary); font-family: 'Courier New', monospace;">
+                            </div>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <button id="quickCmdList" class="btn-sm btn-action" title="Zeigt alle Online-Spieler">👥 list</button>
+                                <button id="quickCmdSave" class="btn-sm btn-action" title="Speichert die Welt">💾 save-all</button>
+                                <button id="quickCmdSay" class="btn-sm btn-action" title="Nachricht an alle Spieler">💬 say</button>
+                                <button id="quickCmdStop" class="btn-sm btn-danger" title="Stoppt den Server">🛑 stop</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings Sub-tab -->
+                    <div id="settings-subtab" class="server-subtab-content">
+                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 1.5rem;">
+                            <h3 style="margin: 0 0 1rem 0;">Server Informationen</h3>
+                            <div style="display: grid; gap: 0.75rem;">
+                                <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+                                    <span style="color: var(--text-secondary);">RCON Port:</span>
+                                    <span id="detailRconPort"></span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+                                    <span style="color: var(--text-secondary);">RAM:</span>
+                                    <span id="detailMemory"></span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+                                    <span style="color: var(--text-secondary);">Erstellt am:</span>
+                                    <span id="detailCreated"></span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+                                    <span style="color: var(--text-secondary);">Pfad:</span>
+                                    <span id="detailPath" style="font-family: monospace; font-size: 0.875rem;"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
+                            <h3 style="margin: 0 0 1.5rem 0;">Server Properties</h3>
+                            <form id="serverPropertiesForm">
+                                <div style="display: grid; gap: 1rem;">
+                                    <div class="form-group">
+                                        <label for="propMotd">MOTD (Message of the Day):</label>
+                                        <input type="text" id="propMotd" placeholder="A Minecraft Server">
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                        <div class="form-group">
+                                            <label for="propMaxPlayers">Max Players:</label>
+                                            <input type="number" id="propMaxPlayers" min="1" max="10000" value="20">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="propDifficulty">Schwierigkeit:</label>
+                                            <select id="propDifficulty">
+                                                <option value="peaceful">Friedlich</option>
+                                                <option value="easy">Einfach</option>
+                                                <option value="normal">Normal</option>
+                                                <option value="hard">Schwer</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                        <div class="form-group">
+                                            <label for="propGamemode">Spielmodus:</label>
+                                            <select id="propGamemode">
+                                                <option value="survival">Survival</option>
+                                                <option value="creative">Creative</option>
+                                                <option value="adventure">Adventure</option>
+                                                <option value="spectator">Spectator</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="propViewDistance">View Distance:</label>
+                                            <input type="number" id="propViewDistance" min="3" max="32" value="10">
+                                        </div>
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                        <div class="form-group">
+                                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                                <input type="checkbox" id="propPvp">
+                                                PvP aktivieren
+                                            </label>
+                                        </div>
+                                        <div class="form-group">
+                                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                                <input type="checkbox" id="propWhitelist">
+                                                Whitelist aktivieren
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                        <div class="form-group">
+                                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                                <input type="checkbox" id="propOnlineMode">
+                                                Online Mode (Premium-Accounts erforderlich)
+                                            </label>
+                                        </div>
+                                        <div class="form-group">
+                                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                                <input type="checkbox" id="propCommandBlocks">
+                                                Command Blocks aktivieren
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                                    <button type="submit" class="btn btn-primary">💾 Speichern</button>
+                                    <button type="button" id="reloadProperties" class="btn btn-secondary">🔄 Neu laden</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Plugins Sub-tab -->
+                    <div id="plugins-subtab" class="server-subtab-content">
+                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 1.5rem;">
+                            <h3 style="margin: 0 0 1rem 0;">Plugin/Mod Browser</h3>
+                            <div class="form-row" style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 1rem;">
+                                <input type="text" id="detailPluginSearch" placeholder="Plugin oder Mod suchen..." style="padding: 0.75rem;">
+                                
+                                <select id="detailPluginSource" style="padding: 0.75rem;">
+                                    <option value="">Alle Quellen</option>
+                                    <option value="modrinth">Modrinth</option>
+                                    <option value="spigot">Spigot</option>
+                                </select>
+                                
+                                <input type="text" id="detailPluginVersion" placeholder="MC Version" style="padding: 0.75rem;">
+                                
+                                <button id="detailSearchPlugins" class="btn btn-primary" style="padding: 0.75rem 2rem;">Suchen</button>
+                            </div>
+                            <div id="detailPluginResults" style="margin-top: 1.5rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">
+                                <p style="color: var(--text-secondary); grid-column: 1 / -1; text-align: center;">Suche nach Plugins oder Mods für diesen Server...</p>
+                            </div>
+                        </div>
+
+                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h3 style="margin: 0;">Installierte Plugins/Mods</h3>
+                                <button id="refreshServerPlugins" class="btn btn-secondary">🔄 Aktualisieren</button>
+                            </div>
+                            <div id="serverPluginsList">
+                                <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">Lade Plugins...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Files Sub-tab -->
+                    <div id="files-subtab" class="server-subtab-content">
+                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <div>
+                                    <h3 style="margin: 0;">File Explorer</h3>
+                                    <div id="currentPath" style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.25rem; font-family: monospace;">
+                                        / <span id="pathDisplay"></span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button id="goUpDirectory" class="btn btn-secondary" style="display: none;">⬆ Zurück</button>
+                                    <button id="refreshFiles" class="btn btn-secondary">🔄 Aktualisieren</button>
+                                </div>
+                            </div>
+
+                            <!-- File Browser -->
+                            <div id="fileBrowser" style="background: var(--bg-tertiary); border-radius: 8px; border: 1px solid var(--border); min-height: 400px;">
+                                <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+                                    Lade Dateien...
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- File Browser only - Editor is now a modal -->
+                    </div>
+
+                    <!-- Backups Sub-tab -->
+                    <div id="backups-subtab" class="server-subtab-content">
+                        <button id="createBackupBtn" class="btn btn-primary" style="margin-bottom: 1.5rem;">
+                            💾 Backup erstellen
+                        </button>
+
+                        <h3 style="margin: 0 0 0.5rem 0;">Server Backups</h3>
+                        <p style="margin: 0 0 1.5rem 0; color: var(--text-secondary); font-size: 0.9rem;">Erstelle und verwalte Backups deines Servers</p>
+
+                        <!-- Backup List -->
+                        <div id="backupsList" style="display: grid; gap: 1rem;">
+                            <div style="padding: 2rem; text-align: center; color: var(--text-secondary); background: var(--bg-tertiary); border-radius: 8px;">
+                                Lade Backups...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- World Management Sub-tab -->
+                    <div id="world-subtab" class="server-subtab-content">
+                        <h3 style="margin: 0 0 0.5rem 0;">🌍 World Management</h3>
+                        <p style="margin: 0 0 1.5rem 0; color: var(--text-secondary); font-size: 0.9rem;">Verwalte deine Minecraft Welten</p>
+
+                        <!-- World Info -->
+                        <div id="world-info" style="margin-bottom: 2rem;">
+                            <div style="padding: 2rem; text-align: center; color: var(--text-secondary); background: var(--bg-tertiary); border-radius: 8px;">
+                                Lade Welt-Informationen...
+                            </div>
+                        </div>
+
+                        <!-- Gamerules Section -->
+                        <div style="margin-bottom: 2rem;">
+                            <h4 style="margin: 0 0 1rem 0;">🎮 Gamerules</h4>
+                            <div id="gamerules-list">
+                                <div style="padding: 2rem; text-align: center; color: var(--text-secondary); background: var(--bg-tertiary); border-radius: 8px;">
+                                    Lade Gamerules...
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- World Border Section -->
+                        <div style="margin-bottom: 2rem;">
+                            <h4 style="margin: 0 0 1rem 0;">🌐 World Border</h4>
+                            <div id="world-border-config">
+                                <div style="padding: 2rem; text-align: center; color: var(--text-secondary); background: var(--bg-tertiary); border-radius: 8px;">
+                                    Lade World Border Konfiguration...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Network Sub-tab (Proxy Only) -->
+                    <div id="network-subtab" class="server-subtab-content">
+                        <h3 style="margin: 0 0 0.5rem 0;">🌐 Proxy-Netzwerk</h3>
+                        <p style="margin: 0 0 1.5rem 0; color: var(--text-secondary); font-size: 0.9rem;">Verwalte Backend-Server und Netzwerkeinstellungen</p>
+
+                        <!-- View Tabs -->
+                        <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border);">
+                            <button class="network-view-tab active" data-view="list" onclick="switchNetworkView('list')" style="padding: 0.75rem 1.5rem; background: none; border: none; border-bottom: 3px solid var(--primary); color: var(--primary); cursor: pointer; font-weight: 600;">
+                                📋 Listenansicht
+                            </button>
+                            <button class="network-view-tab" data-view="topology" onclick="switchNetworkView('topology')" style="padding: 0.75rem 1.5rem; background: none; border: none; border-bottom: 3px solid transparent; color: var(--text-secondary); cursor: pointer;">
+                                🗺️ Netzwerk-Topologie
+                            </button>
+                        </div>
+
+                        <!-- List View -->
+                        <div id="network-list-view">
+                            <!-- Backend Servers Section -->
+                            <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                    <h4 style="margin: 0;">Backend Server</h4>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <button class="btn btn-primary" onclick="showTemplateServerModal()">
+                                            ⚡ Schnellerstellung
+                                        </button>
+                                        <button class="btn btn-primary" onclick="showAddBackendServerModal()">
+                                            ➕ Server hinzufügen
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Quick Add Server Section -->
+                                <div id="quickAddServerContainer" style="margin-bottom: 1.5rem;"></div>
+                                
+                                <div id="backendServerList">
+                                    <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+                                        Lade Backend-Server...
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Proxy Settings Section -->
+                            <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px;">
+                                <h4 style="margin: 0 0 1rem 0;">Proxy-Einstellungen</h4>
+                                <form id="proxySettingsForm" style="display: grid; gap: 1rem;">
+                                    <div class="form-group">
+                                        <label for="proxyMotd">MOTD (Message of the Day):</label>
+                                        <input type="text" id="proxyMotd" placeholder="Ein BungeeCord Server" style="width: 100%;">
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="proxyMaxPlayers">Max. Spieler:</label>
+                                            <input type="number" id="proxyMaxPlayers" value="100" min="1" max="10000">
+                                        </div>
+                                        <div class="form-group">
+                                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                                <input type="checkbox" id="proxyForceDefault">
+                                                Standard-Server erzwingen
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">💾 Einstellungen speichern</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Topology View -->
+                        <div id="network-topology-view" style="display: none;">
+                            <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                    <div>
+                                        <h4 style="margin: 0;">Netzwerk-Topologie</h4>
+                                        <p style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: var(--text-secondary);">Interaktive Darstellung deines Netzwerks</p>
+                                    </div>
+                                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                        <span style="font-size: 0.85rem; color: var(--text-secondary);">Auto-Refresh:</span>
+                                        <label style="display: flex; align-items: center; gap: 0.25rem;">
+                                            <input type="checkbox" id="topologyAutoRefresh" checked>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div id="networkTopology" style="width: 100%; height: 600px; background: var(--bg-tertiary); border-radius: 8px; position: relative; overflow: hidden;">
+                                    <!-- Topology will be rendered here -->
+                                </div>
+                                <div style="margin-top: 1rem; display: flex; gap: 1rem; font-size: 0.85rem; color: var(--text-secondary);">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <span style="width: 16px; height: 16px; background: var(--success-color); border-radius: 50%;"></span>
+                                        Online
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <span style="width: 16px; height: 16px; background: var(--danger-color); border-radius: 50%;"></span>
+                                        Offline
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <span style="width: 16px; height: 16px; background: var(--primary); border-radius: 50%;"></span>
+                                        Proxy Server
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Players Sub-tab -->
+                    <div id="players-subtab" class="server-subtab-content">
+                        <h3 style="margin: 0 0 0.5rem 0;">👥 Player Management</h3>
+                        <p style="margin: 0 0 1.5rem 0; color: var(--text-secondary); font-size: 0.9rem;">Verwalte Spieler auf deinem Server</p>
+
+                        <!-- Player Controls -->
+                        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                            <input type="text" id="playerSearch" placeholder="🔍 Spieler suchen..." 
+                                   style="flex: 1; min-width: 250px; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary);"
+                                   oninput="filterPlayers()">
+                            <select id="playerStatusFilter" 
+                                    style="padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary);"
+                                    onchange="filterPlayers()">
+                                <option value="all">Alle Status</option>
+                                <option value="online">Online</option>
+                                <option value="offline">Offline</option>
+                                <option value="banned">Gebannt</option>
+                                <option value="whitelisted">Whitelist</option>
+                                <option value="op">Operator</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="loadPlayers()">
+                                <i class="fas fa-sync-alt"></i> Aktualisieren
+                            </button>
+                        </div>
+
+                        <!-- Player List -->
+                        <div id="playerList">
+                            <div style="padding: 2rem; text-align: center; color: var(--text-secondary); background: var(--bg-tertiary); border-radius: 8px;">
+                                Lade Spieler...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Player Stats Modal -->
+            <div id="playerStatsModal" class="modal">
+                <div class="modal-content" style="max-width: 800px;">
+                    <div class="modal-header">
+                        <h2>Player Statistics</h2>
+                        <span class="close" onclick="closePlayerStatsModal()">&times;</span>
+                    </div>
+                    <div class="modal-body" id="playerStatsContent">
+                        <!-- Stats content loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Backend Server Modal -->
+            <div id="backendServerModal" class="modal">
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="modal-header">
+                        <h2 id="backendServerModalTitle">Backend-Server hinzufügen</h2>
+                        <span class="close" onclick="closeBackendServerModal()">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <form id="backendServerForm" style="display: grid; gap: 1rem;">
+                            <div class="form-group">
+                                <label for="backendServerName">Server Name*</label>
+                                <input type="text" id="backendServerName" required placeholder="lobby" style="width: 100%;">
+                                <small class="help-text">Eindeutiger Name (z.B. lobby, survival, creative)</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="backendServerAddress">Server Adresse*</label>
+                                <input type="text" id="backendServerAddress" required placeholder="localhost:25565" style="width: 100%;">
+                                <small class="help-text">IP:Port des Backend-Servers</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="backendServerMotd">MOTD (optional)</label>
+                                <input type="text" id="backendServerMotd" placeholder="Lobby Server" style="width: 100%;">
+                                <small class="help-text">Beschreibung des Servers</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="checkbox" id="backendServerRestricted">
+                                    Zugriff eingeschränkt
+                                </label>
+                                <small class="help-text">Nur Spieler mit Permission können beitreten</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="checkbox" id="backendServerDefault">
+                                    Als Standard-Server setzen
+                                </label>
+                                <small class="help-text">Spieler werden hierhin verbunden wenn sie dem Proxy beitreten</small>
+                            </div>
+
+                            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                                <button type="button" class="btn btn-secondary" onclick="closeBackendServerModal()">Abbrechen</button>
+                                <button type="submit" class="btn btn-primary">Speichern</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Template Server Modal -->
+            <div id="templateServerModal" class="modal">
+                <div class="modal-content" style="max-width: 800px;">
+                    <div class="modal-header">
+                        <h2>⚡ Server aus Vorlage erstellen</h2>
+                        <button class="modal-close" onclick="closeTemplateServerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <p style="margin: 0 0 1.5rem 0; color: var(--text-secondary);">Wähle eine Vorlage um schnell einen vorkonfigurierten Backend-Server zu erstellen</p>
+                        
+                        <div id="templatesList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                            <!-- Templates will be loaded here -->
+                        </div>
+
+                        <div id="templateDetailsForm" style="display: none;">
+                            <form id="templateServerForm">
+                                <h3 style="margin: 0 0 1rem 0;">Server-Details</h3>
+                                
+                                <input type="hidden" id="selectedTemplateId">
+                                
+                                <div class="form-group">
+                                    <label for="templateServerName">Server-Name*:</label>
+                                    <input type="text" id="templateServerName" placeholder="z.B. Lobby-1" required>
+                                    <small class="help-text">Interner Name des Minecraft-Servers</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="templateProxyName">Proxy-Name*:</label>
+                                    <input type="text" id="templateProxyName" placeholder="z.B. lobby" required>
+                                    <small class="help-text">Name wie er im Proxy erscheint (nur Kleinbuchstaben und Bindestriche)</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="templateMemory">RAM:</label>
+                                    <input type="text" id="templateMemory" value="2G">
+                                </div>
+
+                                <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                                    <button type="button" class="btn btn-secondary" onclick="closeTemplateServerModal()">Abbrechen</button>
+                                    <button type="submit" class="btn btn-primary">🚀 Server erstellen</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Editor Container for multiple windows -->
+            <div id="fileEditorContainer"></div>
+
+            <!-- Tasks Tab -->
+            <section id="tasks-tab" class="tab-content">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2 style="margin: 0;">⏰ Geplante Tasks</h2>
+                        <button id="createTaskBtn" class="btn btn-primary">➕ Neuer Task</button>
+                    </div>
+
+                    <!-- Task List -->
+                    <div id="taskList" style="display: grid; gap: 1rem;">
+                        <div class="loading">Lade Tasks...</div>
+                    </div>
+                </div>
+
+                <!-- Execution Log -->
+                <div class="card" style="margin-top: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2 style="margin: 0;">📋 Ausführungs-Log</h2>
+                        <button id="refreshLogBtn" class="btn-icon" title="Aktualisieren">🔄</button>
+                    </div>
+                    <div id="executionLog" style="max-height: 400px; overflow-y: auto;">
+                        <div class="loading">Lade Log...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Task Create/Edit Modal -->
+            <div id="taskModal" class="modal">
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="modal-header">
+                        <h2 id="taskModalTitle">Neuer Task</h2>
+                        <button class="modal-close" onclick="closeTaskModal()">×</button>
+                    </div>
+                    <form id="taskForm" class="modal-body">
+                        <div class="form-group">
+                            <label>Task Name*</label>
+                            <input type="text" id="taskName" placeholder="z.B. Tägliches Backup" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Server*</label>
+                            <select id="taskServer" required>
+                                <option value="">Server auswählen...</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Task Typ*</label>
+                            <select id="taskType" required>
+                                <option value="backup">🗄️ Backup erstellen</option>
+                                <option value="restart">🔄 Server neustarten</option>
+                                <option value="start">▶️ Server starten</option>
+                                <option value="stop">⏹️ Server stoppen</option>
+                                <option value="command">⌨️ Befehl ausführen</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" id="taskCommandGroup" style="display: none;">
+                            <label>Befehl*</label>
+                            <input type="text" id="taskCommand" placeholder="z.B. save-all">
+                            <small style="color: var(--text-secondary);">Befehl ohne führenden Slash (/)</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Zeitplan (Cron Expression)*</label>
+                            <input type="text" id="taskCron" placeholder="z.B. 0 */6 * * *" required>
+                            <small style="color: var(--text-secondary);">
+                                Format: Minute Stunde Tag Monat Wochentag<br>
+                                Beispiele:<br>
+                                • <code>0 */6 * * *</code> - Alle 6 Stunden<br>
+                                • <code>0 2 * * *</code> - Täglich um 2:00 Uhr<br>
+                                • <code>*/30 * * * *</code> - Alle 30 Minuten
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" id="taskEnabled" checked>
+                                <span>Task aktiviert</span>
+                            </label>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                            <button type="button" class="btn btn-secondary" onclick="closeTaskModal()">Abbrechen</button>
+                            <button type="submit" class="btn btn-primary">Speichern</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Webhooks/Notifications Tab -->
+            <section id="webhooks-tab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Benachrichtigungs-Webhooks</h2>
+                        <button id="createWebhookBtn" class="btn btn-primary">➕ Webhook hinzufügen</button>
+                    </div>
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem;">Erhalte Benachrichtigungen über Discord oder andere Webhooks, wenn wichtige Server-Ereignisse auftreten.</p>
+
+                    <div id="webhooksList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
+                        <!-- Webhook cards will be dynamically loaded here -->
+                        <p id="noWebhooksMessage" style="color: var(--text-secondary); grid-column: 1 / -1; text-align: center; padding: 2rem;">Keine Webhooks konfiguriert. Erstelle einen Webhook, um Benachrichtigungen zu erhalten.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Webhook Modal -->
+            <div id="webhookModal" class="modal">
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="modal-header">
+                        <h3 id="webhookModalTitle">Webhook hinzufügen</h3>
+                        <button class="modal-close" onclick="closeWebhookModal()">&times;</button>
+                    </div>
+                    <form id="webhookForm">
+                        <div style="margin-bottom: 1.5rem;">
+                            <label>Webhook Name*</label>
+                            <input type="text" id="webhookName" placeholder="z.B. Discord Server Alerts" required style="width: 100%; padding: 0.75rem; margin-top: 0.5rem; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 4px;">
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label>Webhook URL*</label>
+                            <input type="url" id="webhookUrl" placeholder="https://discord.com/api/webhooks/..." required style="width: 100%; padding: 0.75rem; margin-top: 0.5rem; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 4px;">
+                            <small style="color: var(--text-secondary); display: block; margin-top: 0.25rem;">Discord Webhook URL oder beliebige HTTP POST Endpoint</small>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label>Webhook Typ*</label>
+                            <select id="webhookType" style="width: 100%; padding: 0.75rem; margin-top: 0.5rem; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 4px;">
+                                <option value="discord">Discord Webhook</option>
+                                <option value="generic">Generisches Webhook (JSON)</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label>Server (optional)</label>
+                            <select id="webhookServerId" style="width: 100%; padding: 0.75rem; margin-top: 0.5rem; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 4px;">
+                                <option value="">Alle Server</option>
+                            </select>
+                            <small style="color: var(--text-secondary); display: block; margin-top: 0.25rem;">Leer lassen für Benachrichtigungen von allen Servern</small>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; margin-bottom: 0.75rem;">Ereignisse*</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: var(--bg-secondary); border-radius: 4px; cursor: pointer;">
+                                    <input type="checkbox" class="event-checkbox" value="start" style="cursor: pointer;">
+                                    <span>🟢 Server Start</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: var(--bg-secondary); border-radius: 4px; cursor: pointer;">
+                                    <input type="checkbox" class="event-checkbox" value="stop" style="cursor: pointer;">
+                                    <span>🔴 Server Stop</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: var(--bg-secondary); border-radius: 4px; cursor: pointer;">
+                                    <input type="checkbox" class="event-checkbox" value="crash" style="cursor: pointer;">
+                                    <span>💥 Server Crash</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: var(--bg-secondary); border-radius: 4px; cursor: pointer;">
+                                    <input type="checkbox" class="event-checkbox" value="player_join" style="cursor: pointer;">
+                                    <span>👋 Spieler Join</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: var(--bg-secondary); border-radius: 4px; cursor: pointer;">
+                                    <input type="checkbox" class="event-checkbox" value="player_leave" style="cursor: pointer;">
+                                    <span>👤 Spieler Leave</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: var(--bg-secondary); border-radius: 4px; cursor: pointer;">
+                                    <input type="checkbox" class="event-checkbox" value="backup_complete" style="cursor: pointer;">
+                                    <span>💾 Backup Erfolgreich</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: var(--bg-secondary); border-radius: 4px; cursor: pointer;">
+                                    <input type="checkbox" class="event-checkbox" value="backup_failed" style="cursor: pointer;">
+                                    <span>⚠️ Backup Fehlgeschlagen</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" id="webhookEnabled" checked style="cursor: pointer;">
+                                <span>Webhook aktiviert</span>
+                            </label>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                            <button type="button" class="btn btn-secondary" onclick="closeWebhookModal()">Abbrechen</button>
+                            <button type="submit" class="btn btn-primary">Speichern</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Logs Tab -->
+            <section id="logs-tab" class="tab-content">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2 style="margin: 0;">📋 Server Logs</h2>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-right: 1rem;">
+                                <input type="checkbox" id="autoRefreshCheckbox">
+                                <span style="color: var(--text-secondary); font-size: 0.875rem;">Auto-Refresh (5s)</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-right: 1rem;">
+                                <input type="checkbox" id="autoScrollLogCheckbox" checked>
+                                <span style="color: var(--text-secondary); font-size: 0.875rem;">Auto-Scroll</span>
+                            </label>
+                            <button id="refreshLogsBtn" class="btn btn-secondary">🔄 Aktualisieren</button>
+                            <button id="exportLogsBtn" class="btn btn-primary">📥 Exportieren</button>
+                            <button id="clearLogsBtn" class="btn btn-secondary">🗑 Löschen</button>
+                        </div>
+                    </div>
+
+                    <!-- Filters -->
+                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                        <select id="logServerSelect" class="form-control" style="padding: 0.75rem;">
+                            <option value="">Server auswählen...</option>
+                        </select>
+                        
+                        <select id="logLevelFilter" class="form-control" style="padding: 0.75rem;">
+                            <option value="">Alle Levels</option>
+                            <option value="INFO">INFO</option>
+                            <option value="WARN">WARN</option>
+                            <option value="ERROR">ERROR</option>
+                            <option value="FATAL">FATAL</option>
+                            <option value="DEBUG">DEBUG</option>
+                        </select>
+                        
+                        <select id="logFileSelect" class="form-control" style="padding: 0.75rem;">
+                            <option value="latest">latest.log</option>
+                        </select>
+                    </div>
+
+                    <!-- Search -->
+                    <div style="margin-bottom: 1.5rem;">
+                        <input type="text" id="logSearchInput" placeholder="Logs durchsuchen..." class="form-control" style="width: 100%; padding: 0.75rem;">
+                    </div>
+
+                    <!-- Log Statistics -->
+                    <div id="logStats" style="margin-bottom: 1.5rem;"></div>
+
+                    <!-- Log Display -->
+                    <div id="logDisplay" class="log-viewer">
+                        <div class="no-logs">Bitte wähle einen Server aus.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Plugins/Mods Tab -->
+            <section id="plugins-tab" class="tab-content">
+                <div class="card">
+                    <h2>Plugin/Mod Browser</h2>
+                    
+                    <div class="search-container" style="margin-bottom: 2rem;">
+                        <div class="form-row" style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 1rem;">
+                            <input type="text" id="pluginSearch" placeholder="Plugin oder Mod suchen..." style="padding: 0.75rem;">
+                            
+                            <select id="pluginSource" style="padding: 0.75rem;">
+                                <option value="">Alle Quellen</option>
+                                <option value="modrinth">Modrinth</option>
+                                <option value="spigot">Spigot</option>
+                            </select>
+                            
+                            <select id="pluginLoaderType" style="padding: 0.75rem;">
+                                <option value="">Alle Typen</option>
+                                <option value="paper">Paper/Spigot</option>
+                                <option value="fabric">Fabric</option>
+                                <option value="forge">Forge</option>
+                            </select>
+                            
+                            <input type="text" id="pluginMcVersion" placeholder="MC Version" style="padding: 0.75rem;">
+                            
+                            <button id="searchPluginsBtn" class="btn btn-primary" style="padding: 0.75rem 2rem;">Suchen</button>
+                        </div>
+                    </div>
+
+                    <div id="pluginResults" class="plugin-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+                        <!-- Plugin cards will be dynamically loaded here -->
+                        <p style="color: var(--text-secondary); grid-column: 1 / -1; text-align: center;">Suche nach Plugins oder Mods...</p>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 2rem;">
+                    <div class="card-header">
+                        <h2>Installierte Plugins/Mods</h2>
+                        <div style="display: flex; gap: 1rem;">
+                            <select id="pluginServerSelect" style="padding: 0.5rem; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 4px;">
+                                <option value="">Server wählen...</option>
+                            </select>
+                            <button id="refreshPluginsBtn" class="btn btn-secondary">🔄 Aktualisieren</button>
+                        </div>
+                    </div>
+                    <div id="installedPluginsList">
+                        <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">Wähle einen Server aus, um installierte Plugins/Mods anzuzeigen</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RCON Console Tab -->
+            <section id="rcon-tab" class="tab-content">
+                <div class="card">
+                    <h2>RCON Console</h2>
+                    <p class="help-text">Verbinde dich mit einem laufenden Server über RCON</p>
+                    
+                    <div class="connection-form">
+                        <div class="form-group">
+                            <label for="serverHost">Server Host:</label>
+                            <input type="text" id="serverHost" placeholder="localhost" value="localhost">
+                        </div>
+                        <div class="form-group">
+                            <label for="rconPort">Port:</label>
+                            <input type="number" id="rconPort" placeholder="25575" value="25575">
+                        </div>
+                        <div class="form-group">
+                            <label for="serverPassword">RCON Password:</label>
+                            <input type="password" id="serverPassword" placeholder="Passwort">
+                        </div>
+                        <button id="connectBtn" class="btn btn-primary">Verbinden</button>
+                        <button id="disconnectBtn" class="btn btn-secondary" disabled>Trennen</button>
+                    </div>
+                    
+                    <div id="connectionStatus" class="status-indicator">
+                        <span class="status-dot offline"></span>
+                        <span id="statusText">Nicht verbunden</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Quick Actions</h2>
+                    <div class="quick-actions">
+                        <button class="btn btn-action" data-command="list">👥 Spieler Liste</button>
+                        <button class="btn btn-action" data-command="time set day">☀️ Tag setzen</button>
+                        <button class="btn btn-action" data-command="time set night">🌙 Nacht setzen</button>
+                        <button class="btn btn-action" data-command="weather clear">🌤️ Wetter klar</button>
+                        <button class="btn btn-action" data-command="weather rain">🌧️ Regen</button>
+                        <button class="btn btn-action" data-command="save-all">💾 Welt speichern</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Konsole</h2>
+                    <div class="console-container">
+                        <div id="console" class="console"></div>
+                    </div>
+                    <div class="command-input-container">
+                        <input type="text" id="commandInput" placeholder="Befehl eingeben... (z.B. 'say Hello World')" disabled>
+                        <button id="sendCommandBtn" class="btn btn-primary" disabled>Senden</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Minecraft Server Manager v2.0 | Made with ❤️</p>
+        </footer>
+    </div>
+
+    <!-- Modal für Server Details -->
+    <div id="serverModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2 id="modalTitle">Server Details</h2>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- UX Enhancement Scripts (v3.12.0) -->
+    <script src="js/toast.js"></script>
+    <script src="js/unsavedChanges.js"></script>
+    <!-- Tutorial System (v3.16.0) -->
+    <script src="js/tutorial.js"></script>
+    <!-- Power Features (v3.13.0) -->
+    <script src="js/contextMenu.js"></script>
+    <script src="js/clipboard.js"></script>
+    <script src="js/commandPalette.js"></script>
+    <script src="js/tagManager.js"></script>
+    <script src="js/bulkOperations.js"></script>
+    <!-- Dashboard Features (v3.13.0) -->
+    <script src="js/widgetSystem.js"></script>
+    <script src="js/activityFeed.js"></script>
+    <!-- Core Scripts -->
+    <script src="js/theme.js"></script>
+    <script src="js/websocket.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/serverDetails.js"></script>
+    <script src="js/world.js"></script>
+    <script src="js/players.js"></script>
+    <script src="js/proxy.js"></script>
+    <script src="js/networkTopology.js"></script>
+    <script src="js/tasks.js"></script>
+    <script src="js/webhooks.js"></script>
+    <script src="js/logs.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

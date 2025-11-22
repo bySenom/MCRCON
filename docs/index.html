@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Server Manager - Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #e4e4e7;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 4rem 0;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            margin-bottom: 3rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: #a1a1aa;
+            margin-bottom: 2rem;
+        }
+
+        .badges {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .badge {
+            padding: 0.5rem 1rem;
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid #667eea;
+            border-radius: 6px;
+            color: #667eea;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        section {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 3rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: #667eea;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin: 2rem 0 1rem 0;
+            color: #a78bfa;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            border-color: #667eea;
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #e4e4e7;
+        }
+
+        .feature-desc {
+            color: #a1a1aa;
+            font-size: 0.95rem;
+        }
+
+        code {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            color: #a78bfa;
+            font-family: 'Courier New', monospace;
+        }
+
+        pre {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .tech-stack {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .tech-badge {
+            padding: 0.5rem 1rem;
+            background: rgba(167, 139, 250, 0.2);
+            border: 1px solid #a78bfa;
+            border-radius: 6px;
+            color: #a78bfa;
+            font-size: 0.9rem;
+        }
+
+        ul {
+            margin-left: 2rem;
+            margin-top: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+            color: #d4d4d8;
+        }
+
+        .screenshot {
+            width: 100%;
+            border-radius: 8px;
+            margin: 2rem 0;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #a1a1aa;
+            margin-top: 4rem;
+        }
+
+        .version-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border-radius: 6px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 Minecraft Server Manager</h1>
+            <p class="subtitle">Full-Featured Web-Based Minecraft Server Management Platform</p>
+            <div class="version-badge">📦 Version 3.16.0</div>
+            
+            <div class="badges">
+                <span class="badge">⚡ Node.js + Express</span>
+                <span class="badge">🌐 WebSocket Real-Time</span>
+                <span class="badge">🔐 JWT Authentication</span>
+                <span class="badge">🚀 Multi-Server Management</span>
+            </div>
+
+            <div class="cta-buttons">
+                <a href="https://github.com/yourusername/MCRCON" class="btn btn-primary">
+                    📥 Download Latest Release
+                </a>
+                <a href="#installation" class="btn btn-secondary">
+                    📖 Get Started
+                </a>
+            </div>
+        </header>
+
+        <section id="features">
+            <h2>✨ Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎮</div>
+                    <div class="feature-title">Multi-Server Support</div>
+                    <div class="feature-desc">Create and manage Vanilla, Paper, Fabric, Forge, Spigot, BungeeCord, Waterfall, and Velocity servers from one interface</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <div class="feature-title">Proxy Network Management</div>
+                    <div class="feature-desc">Full BungeeCord, Waterfall, and Velocity proxy support with backend server management and automatic configuration</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔌</div>
+                    <div class="feature-title">Plugin & Mod Browser</div>
+                    <div class="feature-desc">Search and install plugins/mods directly from Modrinth and Spigot with version compatibility checking</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📺</div>
+                    <div class="feature-title">Live Console</div>
+                    <div class="feature-desc">Real-time server console with WebSocket streaming, command execution, and color-coded output</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">💾</div>
+                    <div class="feature-title">Backup System</div>
+                    <div class="feature-desc">Automated and manual backups with restore functionality and backup scheduling</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <div class="feature-title">Player Management</div>
+                    <div class="feature-desc">Kick, ban, whitelist, op/deop players with stats viewer and Crafatar avatar integration</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-title">Resource Monitoring</div>
+                    <div class="feature-desc">Real-time CPU, RAM, TPS tracking with live charts and system-wide statistics</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⏰</div>
+                    <div class="feature-title">Task Scheduler</div>
+                    <div class="feature-desc">Cron-based automation for backups, restarts, and custom commands with execution logs</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔔</div>
+                    <div class="feature-title">Discord Webhooks</div>
+                    <div class="feature-desc">Automatic notifications for server events (start, stop, crash, player join/leave, backups)</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📝</div>
+                    <div class="feature-title">Advanced Log Viewer</div>
+                    <div class="feature-desc">Filter logs by level, search text, export to file, with statistics and auto-refresh</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🌍</div>
+                    <div class="feature-title">World Management</div>
+                    <div class="feature-desc">Download worlds as ZIP, reset worlds, edit gamerules, configure world borders</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔐</div>
+                    <div class="feature-title">Multi-User Authentication</div>
+                    <div class="feature-desc">JWT-based auth with role-based access control (viewer, operator, admin)</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📁</div>
+                    <div class="feature-title">File Explorer</div>
+                    <div class="feature-desc">Browse, edit, and manage server files directly from the web interface</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <div class="feature-title">Theme Customization</div>
+                    <div class="feature-card">Light/dark mode toggle with smooth transitions and localStorage persistence</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <div class="feature-title">Host/IP Configuration</div>
+                    <div class="feature-desc">Configure custom IP/domain for servers with automatic propagation to backend servers</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-title">Server Templates</div>
+                    <div class="feature-desc">Quick server creation from predefined configurations (Survival, Creative, SkyBlock, etc.)</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tech-stack">
+            <h2>🛠️ Technology Stack</h2>
+            <div class="tech-stack">
+                <span class="tech-badge">Node.js</span>
+                <span class="tech-badge">Express.js</span>
+                <span class="tech-badge">Socket.IO</span>
+                <span class="tech-badge">JWT Authentication</span>
+                <span class="tech-badge">bcrypt</span>
+                <span class="tech-badge">Vanilla JavaScript</span>
+                <span class="tech-badge">HTML5/CSS3</span>
+                <span class="tech-badge">Chart.js</span>
+                <span class="tech-badge">RCON Client</span>
+                <span class="tech-badge">Axios</span>
+                <span class="tech-badge">Node-Cron</span>
+                <span class="tech-badge">Archiver</span>
+            </div>
+        </section>
+
+        <section id="installation">
+            <h2>📥 Installation</h2>
+            
+            <h3>Requirements</h3>
+            <ul>
+                <li>Node.js 16+ installed</li>
+                <li>Java 17+ for running Minecraft servers</li>
+                <li>Windows, Linux, or macOS</li>
+            </ul>
+
+            <h3>Quick Start</h3>
+            <pre><code># Clone the repository
+git clone https://github.com/yourusername/MCRCON.git
+cd MCRCON
+
+# Install dependencies
+npm install
+
+# Copy environment template
+cp .env.example .env
+
+# Start the server
+npm start
+
+# Or use development mode with auto-reload
+npm run dev</code></pre>
+
+            <h3>First Time Setup</h3>
+            <p>1. Open your browser and navigate to <code>http://localhost:3000</code></p>
+            <p>2. Register a new account (first user becomes admin)</p>
+            <p>3. Follow the interactive tutorial to create your first server</p>
+            <p>4. Configure your server settings and start managing!</p>
+
+            <h3>Configuration</h3>
+            <p>Edit <code>.env</code> file to customize:</p>
+            <ul>
+                <li><code>PORT</code> - Web interface port (default: 3000)</li>
+                <li><code>JWT_SECRET</code> - Secret key for JWT authentication</li>
+                <li><code>SESSION_SECRET</code> - Secret key for sessions</li>
+            </ul>
+        </section>
+
+        <section id="usage">
+            <h2>📖 Usage Guide</h2>
+            
+            <h3>Creating a Server</h3>
+            <ol>
+                <li>Navigate to the "Create Server" tab</li>
+                <li>Choose a template or create custom configuration</li>
+                <li>Select server type (Vanilla, Paper, Fabric, etc.)</li>
+                <li>Choose Minecraft version</li>
+                <li>Configure host/IP, port, RAM allocation</li>
+                <li>Set RCON credentials</li>
+                <li>Click "Server erstellen" and wait for download to complete</li>
+            </ol>
+
+            <h3>Managing Servers</h3>
+            <ul>
+                <li><strong>Start/Stop/Restart:</strong> Use control buttons on server cards or details page</li>
+                <li><strong>Live Console:</strong> View real-time logs and execute commands</li>
+                <li><strong>Settings:</strong> Edit server.properties through web interface</li>
+                <li><strong>Files:</strong> Browse and edit server files directly</li>
+                <li><strong>Backups:</strong> Create, restore, and download backups</li>
+                <li><strong>Players:</strong> Manage players with 11 different actions</li>
+                <li><strong>World:</strong> Download, reset worlds, edit gamerules and borders</li>
+            </ul>
+
+            <h3>Setting Up a Proxy Network</h3>
+            <ol>
+                <li>Create a Velocity/Waterfall/BungeeCord proxy server</li>
+                <li>Configure host/IP for external access</li>
+                <li>Use "Create & Add" to create backend servers</li>
+                <li>Backend servers automatically inherit proxy's IP</li>
+                <li>First server becomes default, others require <code>/server</code> command</li>
+            </ol>
+
+            <h3>Installing Plugins/Mods</h3>
+            <ol>
+                <li>Go to server details → "Plugins/Mods" tab</li>
+                <li>Search for plugins (auto-filtered by server type)</li>
+                <li>Select compatible version</li>
+                <li>Click install and restart server</li>
+            </ol>
+
+            <h3>Task Automation</h3>
+            <ol>
+                <li>Navigate to "Tasks" tab</li>
+                <li>Create new task (backup, restart, command)</li>
+                <li>Set cron schedule (e.g., <code>0 */6 * * *</code> = every 6 hours)</li>
+                <li>Task runs automatically or trigger manually</li>
+            </ol>
+
+            <h3>Discord Notifications</h3>
+            <ol>
+                <li>Go to "Webhooks" tab</li>
+                <li>Add Discord webhook URL</li>
+                <li>Select events to monitor</li>
+                <li>Optionally link to specific server</li>
+                <li>Test webhook and enable</li>
+            </ol>
+        </section>
+
+        <section id="api">
+            <h2>🔌 API Reference</h2>
+            <p>REST API with JWT authentication. All endpoints require <code>Authorization: Bearer &lt;token&gt;</code> header.</p>
+            
+            <h3>Main Endpoints</h3>
+            <ul>
+                <li><code>GET /api/servers</code> - List all servers</li>
+                <li><code>POST /api/servers/create</code> - Create new server</li>
+                <li><code>POST /api/servers/:id/start</code> - Start server</li>
+                <li><code>POST /api/servers/:id/stop</code> - Stop server</li>
+                <li><code>POST /api/servers/:id/command</code> - Execute command</li>
+                <li><code>GET /api/servers/:id/logs</code> - Get server logs</li>
+                <li><code>GET /api/servers/:id/world/info</code> - Get world information</li>
+                <li><code>POST /api/servers/:id/proxy/create-and-add</code> - Create backend server</li>
+                <li><code>GET /api/plugins/search</code> - Search plugins/mods</li>
+                <li><code>GET /api/tasks</code> - List scheduled tasks</li>
+                <li><code>GET /api/webhooks</code> - List webhooks</li>
+            </ul>
+        </section>
+
+        <section id="contributing">
+            <h2>🤝 Contributing</h2>
+            <p>Contributions are welcome! Please feel free to submit a Pull Request.</p>
+            <ol>
+                <li>Fork the repository</li>
+                <li>Create your feature branch (<code>git checkout -b feature/AmazingFeature</code>)</li>
+                <li>Commit your changes (<code>git commit -m 'Add some AmazingFeature'</code>)</li>
+                <li>Push to the branch (<code>git push origin feature/AmazingFeature</code>)</li>
+                <li>Open a Pull Request</li>
+            </ol>
+        </section>
+
+        <section id="license">
+            <h2>📄 License</h2>
+            <p>This project is licensed under the MIT License - see the LICENSE file for details.</p>
+        </section>
+
+        <footer>
+            <p>Made with ❤️ for the Minecraft community</p>
+            <p>© 2025 Minecraft Server Manager</p>
+        </footer>
+    </div>
+</body>
+</html>

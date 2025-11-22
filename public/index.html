@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Server Manager</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 Minecraft Server Manager</h1>
+            <p class="subtitle">RCON Control Panel</p>
+        </header>
+
+        <main>
+            <!-- Server Connection Section -->
+            <section class="card">
+                <h2>Server Verbindung</h2>
+                <div class="connection-form">
+                    <div class="form-group">
+                        <label for="serverHost">Server Host:</label>
+                        <input type="text" id="serverHost" placeholder="localhost" value="localhost">
+                    </div>
+                    <div class="form-group">
+                        <label for="serverPort">Port:</label>
+                        <input type="number" id="serverPort" placeholder="25575" value="25575">
+                    </div>
+                    <div class="form-group">
+                        <label for="serverPassword">RCON Password:</label>
+                        <input type="password" id="serverPassword" placeholder="Passwort">
+                    </div>
+                    <button id="connectBtn" class="btn btn-primary">Verbinden</button>
+                    <button id="disconnectBtn" class="btn btn-secondary" disabled>Trennen</button>
+                </div>
+                <div id="connectionStatus" class="status-indicator">
+                    <span class="status-dot offline"></span>
+                    <span id="statusText">Nicht verbunden</span>
+                </div>
+            </section>
+
+            <!-- Quick Actions Section -->
+            <section class="card">
+                <h2>Quick Actions</h2>
+                <div class="quick-actions">
+                    <button class="btn btn-action" data-command="list">👥 Spieler Liste</button>
+                    <button class="btn btn-action" data-command="time set day">☀️ Tag setzen</button>
+                    <button class="btn btn-action" data-command="time set night">🌙 Nacht setzen</button>
+                    <button class="btn btn-action" data-command="weather clear">🌤️ Wetter klar</button>
+                    <button class="btn btn-action" data-command="weather rain">🌧️ Regen</button>
+                    <button class="btn btn-action" data-command="save-all">💾 Welt speichern</button>
+                </div>
+            </section>
+
+            <!-- Command Console Section -->
+            <section class="card">
+                <h2>Konsole</h2>
+                <div class="console-container">
+                    <div id="console" class="console"></div>
+                </div>
+                <div class="command-input-container">
+                    <input type="text" id="commandInput" placeholder="Befehl eingeben... (z.B. 'say Hello World')" disabled>
+                    <button id="sendCommandBtn" class="btn btn-primary" disabled>Senden</button>
+                </div>
+            </section>
+
+            <!-- Server Info Section -->
+            <section class="card">
+                <h2>Server Informationen</h2>
+                <div id="serverInfo" class="server-info">
+                    <p>Verbinde dich mit einem Server um Informationen zu sehen...</p>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Minecraft Server Manager v1.0 | Made with ❤️</p>
+        </footer>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
