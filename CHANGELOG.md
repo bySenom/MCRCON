@@ -2,52 +2,7 @@
 
 All notable changes to the Minecraft Server Manager will be documented in this file.
 
-## [v3.17.0] - Setup Wizard & Installation System - 2025-11-22
-
-### Added
-- **Graphical Setup Wizard**: Beautiful first-run setup experience
-  - 4-step guided installation process
-  - Admin account creation with password validation
-  - Server default settings configuration (RAM, Java path, auto-backup, auto-update)
-  - Feature showcase with 5 highlighted capabilities
-  - Progress bar visualization
-  - Smooth animations and transitions
-  - Auto-redirect to dashboard after completion
-- **Windows Installer Scripts**: One-click installation
-  - `install.bat` - Checks Node.js, installs dependencies, creates .env
-  - `start.bat` - Quick server startup script
-  - Colored console output with status indicators
-  - Automatic error detection and helpful messages
-- **Setup API Endpoints**: Backend support for first-run setup
-  - `POST /api/setup` - Creates admin user and saves configuration
-  - `GET /api/setup/status` - Checks if setup is required
-  - Prevents re-running setup if already completed
-  - Saves settings to `data/config.json`
-- **Smart Index Redirect**: Automatic routing based on setup/auth status
-  - Detects if setup is required → redirects to `/setup.html`
-  - Checks authentication status → redirects to `/dashboard.html` or `/login.html`
-  - Clean loading screen during check
-- **Installation Documentation**: Comprehensive setup guide
-  - `INSTALLATION.md` with platform-specific instructions
-  - Windows/Linux/Mac installation steps
-  - Docker deployment guide
-  - Troubleshooting section
-  - First-steps tutorial after installation
-  - Updated README.md with Quick Start section
-
-### Removed
-- **Tutorial System**: Removed non-functional first-time tutorial
-  - Positioning issues could not be resolved
-  - Replaced with setup wizard for better onboarding
-
-### Changed
-- Version bumped to 3.17.0
-- README.md updated with Quick Start guide and installation link
-- Enhanced onboarding experience with setup wizard
-
----
-
-## [v3.16.0] - Host/IP Configuration & First-Time Tutorial - 2025-11-22
+## [v3.16.0] - Host/IP Configuration - 2025-11-22
 
 ### Added
 - **Host/IP Configuration System**: Configure custom IP addresses or domain names for servers
@@ -57,13 +12,6 @@ All notable changes to the Minecraft Server Manager will be documented in this f
   - Automatic host propagation from proxy to backend servers
   - Frontend UI field for host/IP configuration in server creation
   - Database migration for existing servers
-- **First-Time Tutorial System**: Interactive walkthrough for new users (REMOVED in v3.17.0)
-  - 10-step guided tour through main features
-  - Automatic detection of first-time users
-  - Keyboard shortcuts (ESC to skip)
-  - Step-by-step server creation guide
-  - Highlighted UI elements with pulsing animation
-  - Can be reset from browser console with `Tutorial.reset()`
 - **GitHub Pages Documentation**: Complete project documentation website
   - Feature overview with 16+ key features
   - Installation guide with requirements

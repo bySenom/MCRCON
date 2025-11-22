@@ -6,36 +6,19 @@
     <title>Minecraft Server Manager</title>
     <link rel="stylesheet" href="css/style.css">
     <script>
-        // Check if setup is required and redirect
-        async function checkSetup() {
-            try {
-                const response = await fetch('/api/setup/status');
-                const data = await response.json();
-                
-                if (data.setupRequired) {
-                    window.location.href = '/setup.html';
-                } else {
-                    // Check if logged in
-                    const token = localStorage.getItem('token');
-                    if (token) {
-                        window.location.href = '/dashboard.html';
-                    } else {
-                        window.location.href = '/login.html';
-                    }
-                }
-            } catch (error) {
-                console.error('Setup check failed:', error);
-            }
+        // Redirect to login or dashboard
+        const token = localStorage.getItem('token');
+        if (token) {
+            window.location.href = '/dashboard.html';
+        } else {
+            window.location.href = '/login.html';
         }
-        
-        // Run on page load
-        checkSetup();
     </script>
 </head>
 <body>
     <div class="container" style="text-align: center; padding: 4rem;">
         <h1>🎮 Minecraft Server Manager</h1>
-        <p style="color: var(--text-secondary); margin-top: 1rem;">Loading...</p>
+        <p style="color: var(--text-secondary); margin-top: 1rem;">Redirecting...</p>
     </div>
 </body>
 </html>

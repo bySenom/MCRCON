@@ -4,40 +4,30 @@
 
 [![Node.js](https://img.shields.io/badge/Node.js-16%2B-green.svg)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-3.17.0-orange.svg)](package.json)
+[![Version](https://img.shields.io/badge/Version-3.16.0-orange.svg)](package.json)
 [![GitHub Pages](https://img.shields.io/badge/Docs-GitHub%20Pages-blue.svg)](https://bySenom.github.io/MCRCON/)
 
-> 🚀 **Production-Ready** - Complete with authentication, rate limiting, security headers, graphical installer, and deployment guides.
+> 🚀 **Production-Ready** - Complete with authentication, rate limiting, security headers, and deployment guides.
 
 ---
 
 ## 🚀 Quick Start
 
-### Windows (Recommended)
-
-1. **Download & Extract** this repository
-2. **Double-click** `install.bat` - installs all dependencies
-3. **Double-click** `start.bat` - starts the server
-4. **Browser opens** automatically → Follow 4-step setup wizard
-5. **Done!** Start creating Minecraft servers 🎉
-
-### Linux/Mac
-
 ```bash
+# Clone repository
 git clone https://github.com/bySenom/MCRCON.git
 cd MCRCON
+
+# Install dependencies
 npm install
+
+# Start server
 npm start
+
 # Open browser: http://localhost:3000
 ```
 
-📖 **[Full Installation Guide](INSTALLATION.md)** - Detailed instructions for all platforms
-
----
-
-## 📖 [Full Documentation](https://bySenom.github.io/MCRCON/)
-
-Visit our GitHub Pages for comprehensive documentation, installation guides, and API reference.
+📖 **[Full Documentation](https://bySenom.github.io/MCRCON/)** - Installation guides for all platforms
 
 ---
 
@@ -53,7 +43,6 @@ Visit our GitHub Pages for comprehensive documentation, installation guides, and
 - 📁 **File Explorer** - Edit server files directly in browser
 - ⚙️ **Configuration Editor** - Manage server.properties with form UI
 - 🌐 **Host/IP Configuration** - Custom IP/domain for online hosting
-- 🎨 **Setup Wizard** - Guided installation on first start (NEW v3.17.0)
 
 ### 🔐 Security & Authentication
 - 🔒 **Multi-User System** - JWT-based authentication with bcrypt
