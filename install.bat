@@ -34,14 +34,24 @@ echo [2/4] npm gefunden:
 npm --version
 echo.
 
+REM Check if package.json exists
+if not exist package.json (
+    echo [FEHLER] package.json nicht gefunden!
+    echo Bitte fuehre install.bat im Hauptverzeichnis aus.
+    echo.
+    pause
+    exit /b 1
+)
+
 REM Install dependencies
 echo [3/4] Installiere Abhaengigkeiten...
 echo Dies kann einige Minuten dauern...
 echo.
-npm install --loglevel=info
+npm install
 if %ERRORLEVEL% NEQ 0 (
     echo.
     echo [FEHLER] Installation fehlgeschlagen!
+    echo.
     pause
     exit /b 1
 )
