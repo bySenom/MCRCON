@@ -210,6 +210,13 @@ class Tutorial {
         }
 
         // Update tooltip content
+        this.updateTooltipContent(stepIndex, step);
+    }
+
+    /**
+     * Update tooltip content and event listeners
+     */
+    updateTooltipContent(stepIndex, step) {
         this.tooltip.innerHTML = `
             <div style="margin-bottom: 1.5rem;">
                 <h3 style="margin: 0 0 1rem 0; font-size: 1.5rem; color: #667eea;">${step.title}</h3>
@@ -255,8 +262,13 @@ class Tutorial {
         this.positionTooltip(step);
 
         // Add event listeners
-        document.getElementById('tutorial-skip').addEventListener('click', () => this.skip());
+        const skipBtn = document.getElementById('tutorial-skip');
         const nextBtn = document.getElementById('tutorial-next');
+        
+        if (skipBtn) {
+            skipBtn.addEventListener('click', () => this.skip());
+        }
+        
         if (nextBtn) {
             nextBtn.addEventListener('click', () => this.next());
         }
