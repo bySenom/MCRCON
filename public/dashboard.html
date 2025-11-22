@@ -26,14 +26,14 @@
             <div class="tab-nav-left">
                 <button class="tab-button active" data-tab="dashboard">Dashboard</button>
                 <button class="tab-button" data-tab="server-details" style="display: none;">Server Details</button>
-                <button class="tab-button" data-tab="tasks">⏰ Geplante Tasks</button>
-                <button class="tab-button" data-tab="webhooks">🔔 Benachrichtigungen</button>
-                <button class="tab-button" data-tab="logs">📋 Logs</button>
+                <button class="tab-button" data-tab="tasks">Tasks</button>
+                <button class="tab-button" data-tab="webhooks">Benachrichtigungen</button>
+                <button class="tab-button" data-tab="logs">Logs</button>
                 <button class="tab-button" data-tab="plugins">Plugins/Mods</button>
                 <button class="tab-button" data-tab="rcon">RCON Console</button>
             </div>
             <div class="tab-nav-right">
-                <button class="tab-button tab-button-create" data-tab="create">➕ Neuer Server</button>
+                <button class="tab-button tab-button-create" data-tab="create">Neuer Server</button>
             </div>
         </nav>
 
@@ -812,6 +812,50 @@
                                 </div>
                             </form>
                         </div>
+
+                        <!-- Gamerules Section -->
+                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 1.5rem;">
+                            <h3 style="margin: 0 0 1rem 0;">🎮 Gamerules</h3>
+                            <div id="gamerules-list">
+                                <div style="padding: 2rem; text-align: center; color: var(--text-secondary); background: var(--bg-tertiary); border-radius: 8px;">
+                                    Lade Gamerules...
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- World Border Section -->
+                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 1.5rem;">
+                            <h3 style="margin: 0 0 1rem 0;">🌐 World Border</h3>
+                            <div id="world-border-config">
+                                <div style="padding: 2rem; text-align: center; color: var(--text-secondary); background: var(--bg-tertiary); border-radius: 8px;">
+                                    Lade World Border Konfiguration...
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Proxy Settings Section (Proxy Servers Only) -->
+                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
+                            <h3 style="margin: 0 0 1rem 0;">🌐 Proxy-Einstellungen</h3>
+                            <form id="proxySettingsForm" style="display: grid; gap: 1rem;">
+                                <div class="form-group">
+                                    <label for="proxyMotd">MOTD (Message of the Day):</label>
+                                    <input type="text" id="proxyMotd" placeholder="Ein BungeeCord Server" style="width: 100%;">
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="proxyMaxPlayers">Max. Spieler:</label>
+                                        <input type="number" id="proxyMaxPlayers" value="100" min="1" max="10000">
+                                    </div>
+                                    <div class="form-group">
+                                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <input type="checkbox" id="proxyForceDefault">
+                                            Standard-Server erzwingen
+                                        </label>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">💾 Einstellungen speichern</button>
+                            </form>
+                        </div>
                     </div>
 
                     <!-- Plugins Sub-tab -->
@@ -902,26 +946,6 @@
                                 Lade Welt-Informationen...
                             </div>
                         </div>
-
-                        <!-- Gamerules Section -->
-                        <div style="margin-bottom: 2rem;">
-                            <h4 style="margin: 0 0 1rem 0;">🎮 Gamerules</h4>
-                            <div id="gamerules-list">
-                                <div style="padding: 2rem; text-align: center; color: var(--text-secondary); background: var(--bg-tertiary); border-radius: 8px;">
-                                    Lade Gamerules...
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- World Border Section -->
-                        <div style="margin-bottom: 2rem;">
-                            <h4 style="margin: 0 0 1rem 0;">🌐 World Border</h4>
-                            <div id="world-border-config">
-                                <div style="padding: 2rem; text-align: center; color: var(--text-secondary); background: var(--bg-tertiary); border-radius: 8px;">
-                                    Lade World Border Konfiguration...
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
                     <!-- Network Sub-tab (Proxy Only) -->
@@ -943,17 +967,7 @@
                         <div id="network-list-view">
                             <!-- Backend Servers Section -->
                             <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                                    <h4 style="margin: 0;">Backend Server</h4>
-                                    <div style="display: flex; gap: 0.5rem;">
-                                        <button class="btn btn-primary" onclick="showTemplateServerModal()">
-                                            ⚡ Schnellerstellung
-                                        </button>
-                                        <button class="btn btn-primary" onclick="showAddBackendServerModal()">
-                                            ➕ Server hinzufügen
-                                        </button>
-                                    </div>
-                                </div>
+                                <h4 style="margin: 0 0 1rem 0;">Backend Server</h4>
                                 
                                 <!-- Quick Add Server Section -->
                                 <div id="quickAddServerContainer" style="margin-bottom: 1.5rem;"></div>
@@ -963,30 +977,6 @@
                                         Lade Backend-Server...
                                     </div>
                                 </div>
-                            </div>
-
-                            <!-- Proxy Settings Section -->
-                            <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px;">
-                                <h4 style="margin: 0 0 1rem 0;">Proxy-Einstellungen</h4>
-                                <form id="proxySettingsForm" style="display: grid; gap: 1rem;">
-                                    <div class="form-group">
-                                        <label for="proxyMotd">MOTD (Message of the Day):</label>
-                                        <input type="text" id="proxyMotd" placeholder="Ein BungeeCord Server" style="width: 100%;">
-                                    </div>
-                                    <div class="form-row">
-                                        <div class="form-group">
-                                            <label for="proxyMaxPlayers">Max. Spieler:</label>
-                                            <input type="number" id="proxyMaxPlayers" value="100" min="1" max="10000">
-                                        </div>
-                                        <div class="form-group">
-                                            <label style="display: flex; align-items: center; gap: 0.5rem;">
-                                                <input type="checkbox" id="proxyForceDefault">
-                                                Standard-Server erzwingen
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <button type="submit" class="btn btn-primary">💾 Einstellungen speichern</button>
-                                </form>
                             </div>
                         </div>
 
@@ -1076,52 +1066,99 @@
 
             <!-- Backend Server Modal -->
             <div id="backendServerModal" class="modal">
-                <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-content" style="max-width: 900px;">
                     <div class="modal-header">
                         <h2 id="backendServerModalTitle">Backend-Server hinzufügen</h2>
                         <span class="close" onclick="closeBackendServerModal()">&times;</span>
                     </div>
                     <div class="modal-body">
-                        <form id="backendServerForm" style="display: grid; gap: 1rem;">
-                            <div class="form-group">
-                                <label for="backendServerName">Server Name*</label>
-                                <input type="text" id="backendServerName" required placeholder="lobby" style="width: 100%;">
-                                <small class="help-text">Eindeutiger Name (z.B. lobby, survival, creative)</small>
-                            </div>
+                        <!-- Tab Navigation -->
+                        <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border);">
+                            <button class="backend-modal-tab active" data-tab="basic" onclick="switchBackendModalTab('basic')" style="padding: 0.75rem 1.5rem; background: none; border: none; border-bottom: 3px solid var(--primary); color: var(--primary); cursor: pointer; font-weight: 600;">
+                                🔧 Grundeinstellungen
+                            </button>
+                            <button class="backend-modal-tab" data-tab="gamerules" onclick="switchBackendModalTab('gamerules')" style="padding: 0.75rem 1.5rem; background: none; border: none; border-bottom: 3px solid transparent; color: var(--text-secondary); cursor: pointer;">
+                                🎮 Gamerules
+                            </button>
+                            <button class="backend-modal-tab" data-tab="worldborder" onclick="switchBackendModalTab('worldborder')" style="padding: 0.75rem 1.5rem; background: none; border: none; border-bottom: 3px solid transparent; color: var(--text-secondary); cursor: pointer;">
+                                🌐 World Border
+                            </button>
+                        </div>
 
-                            <div class="form-group">
-                                <label for="backendServerAddress">Server Adresse*</label>
-                                <input type="text" id="backendServerAddress" required placeholder="localhost:25565" style="width: 100%;">
-                                <small class="help-text">IP:Port des Backend-Servers</small>
-                            </div>
+                        <!-- Basic Settings Tab -->
+                        <div id="backend-basic-tab" class="backend-modal-tab-content" style="display: block;">
+                            <form id="backendServerForm" style="display: grid; gap: 1rem;">
+                                <div class="form-group">
+                                    <label for="backendServerName">Server Name*</label>
+                                    <input type="text" id="backendServerName" required placeholder="lobby" style="width: 100%;">
+                                    <small class="help-text">Eindeutiger Name (z.B. lobby, survival, creative)</small>
+                                </div>
 
-                            <div class="form-group">
-                                <label for="backendServerMotd">MOTD (optional)</label>
-                                <input type="text" id="backendServerMotd" placeholder="Lobby Server" style="width: 100%;">
-                                <small class="help-text">Beschreibung des Servers</small>
-                            </div>
+                                <div class="form-group">
+                                    <label for="backendServerAddress">Server Adresse*</label>
+                                    <input type="text" id="backendServerAddress" required placeholder="localhost:25565" style="width: 100%;">
+                                    <small class="help-text">IP:Port des Backend-Servers</small>
+                                </div>
 
-                            <div class="form-group">
-                                <label style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <input type="checkbox" id="backendServerRestricted">
-                                    Zugriff eingeschränkt
-                                </label>
-                                <small class="help-text">Nur Spieler mit Permission können beitreten</small>
-                            </div>
+                                <div class="form-group">
+                                    <label for="backendServerMotd">MOTD (optional)</label>
+                                    <input type="text" id="backendServerMotd" placeholder="Lobby Server" style="width: 100%;">
+                                    <small class="help-text">Beschreibung des Servers</small>
+                                </div>
 
-                            <div class="form-group">
-                                <label style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <input type="checkbox" id="backendServerDefault">
-                                    Als Standard-Server setzen
-                                </label>
-                                <small class="help-text">Spieler werden hierhin verbunden wenn sie dem Proxy beitreten</small>
-                            </div>
+                                <div class="form-group">
+                                    <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <input type="checkbox" id="backendServerRestricted">
+                                        Zugriff eingeschränkt
+                                    </label>
+                                    <small class="help-text">Nur Spieler mit Permission können beitreten</small>
+                                </div>
 
-                            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-                                <button type="button" class="btn btn-secondary" onclick="closeBackendServerModal()">Abbrechen</button>
-                                <button type="submit" class="btn btn-primary">Speichern</button>
+                                <div class="form-group">
+                                    <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <input type="checkbox" id="backendServerDefault">
+                                        Als Standard-Server setzen
+                                    </label>
+                                    <small class="help-text">Spieler werden hierhin verbunden wenn sie dem Proxy beitreten</small>
+                                </div>
+
+                                <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                                    <button type="button" class="btn btn-secondary" onclick="closeBackendServerModal()">Abbrechen</button>
+                                    <button type="submit" class="btn btn-primary">Speichern</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Gamerules Tab -->
+                        <div id="backend-gamerules-tab" class="backend-modal-tab-content" style="display: none;">
+                            <div style="margin-bottom: 1rem;">
+                                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
+                                    ⚠️ Diese Einstellungen gelten für den Backend-Server. Der Server muss laufen, um Gamerules zu ändern.
+                                </p>
+                                <input type="text" id="backendGameruleSearch" placeholder="🔍 Gamerule suchen..." 
+                                       style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-tertiary);"
+                                       oninput="filterBackendGamerules()">
                             </div>
-                        </form>
+                            <div id="backend-gamerules-list" style="max-height: 400px; overflow-y: auto;">
+                                <div style="padding: 2rem; text-align: center; color: var(--text-secondary); background: var(--bg-tertiary); border-radius: 8px;">
+                                    Wähle einen Backend-Server zum Bearbeiten aus
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- World Border Tab -->
+                        <div id="backend-worldborder-tab" class="backend-modal-tab-content" style="display: none;">
+                            <div style="margin-bottom: 1rem;">
+                                <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                                    ⚠️ Diese Einstellungen gelten für den Backend-Server. Der Server muss laufen, um World Border zu ändern.
+                                </p>
+                            </div>
+                            <div id="backend-world-border-config">
+                                <div style="padding: 2rem; text-align: center; color: var(--text-secondary); background: var(--bg-tertiary); border-radius: 8px;">
+                                    Wähle einen Backend-Server zum Bearbeiten aus
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

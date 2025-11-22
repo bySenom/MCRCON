@@ -67,7 +67,10 @@ class ProxyMonitor {
         try {
             const configPath = path.join(proxyServer.path, 'config.yml');
             
+            console.log(`[ProxyMonitor] Checking backend servers for ${proxyServer.name} at ${configPath}`);
+            
             if (!fs.existsSync(configPath)) {
+                console.log(`[ProxyMonitor] Config file not found: ${configPath}`);
                 return;
             }
 
@@ -75,25 +78,32 @@ class ProxyMonitor {
             const config = yaml.load(configContent);
 
             if (!config.servers) {
+                console.log(`[ProxyMonitor] No servers configured in config.yml for ${proxyServer.name}`);
                 return;
             }
 
+            console.log(`[ProxyMonitor] Found ${Object.keys(config.servers).length} backend servers in config`);
+            
             const statusMap = this.backendStatus.get(proxyServer.id).servers;
 
             // Check each backend server
             for (const [serverName, serverConfig] of Object.entries(config.servers)) {
+                console.log(`[ProxyMonitor] Checking backend server: ${serverName} at ${serverConfig.address}`);
                 const status = await this.checkSingleServer(serverName, serverConfig, proxyServer);
+                console.log(`[ProxyMonitor] Status for ${serverName}:`, status);
                 statusMap.set(serverName, status);
             }
 
             // Emit update via WebSocket
             if (this.io) {
+                const backends = Array.from(statusMap.entries()).map(([name, status]) => ({
+                    name,
+                    ...status
+                }));
+                console.log(`[ProxyMonitor] Emitting status update for ${backends.length} backends`);
                 this.io.emit('proxy-backend-status', {
                     proxyId: proxyServer.id,
-                    backends: Array.from(statusMap.entries()).map(([name, status]) => ({
-                        name,
-                        ...status
-                    }))
+                    backends
                 });
             }
 
@@ -156,20 +166,54 @@ class ProxyMonitor {
             const net = require('net');
             const socket = new net.Socket();
             
-            socket.setTimeout(5000);
+            socket.setTimeout(3000); // Reduced timeout
             
             socket.connect(port, host === 'localhost' ? '127.0.0.1' : host, () => {
-                // Connected successfully
-                socket.destroy();
-                resolve({ players: 0, maxPlayers: 0, motd: '' });
+                // Send handshake packet for server list ping (Minecraft protocol)
+                const handshake = Buffer.from([
+                    0x00, // Packet ID
+                    0xFF, 0xFF, 0xFF, 0xFF, 0x0F, // Protocol version (-1)
+                    0x09, 0x6C, 0x6F, 0x63, 0x61, 0x6C, 0x68, 0x6F, 0x73, 0x74, // "localhost"
+                    0x00, 0x00, // Port
+                    0x01 // Next state (status)
+                ]);
+                
+                socket.write(handshake);
+                
+                // Send status request
+                const statusRequest = Buffer.from([0x01, 0x00]);
+                socket.write(statusRequest);
+                
+                let responseData = Buffer.alloc(0);
+                
+                socket.on('data', (data) => {
+                    responseData = Buffer.concat([responseData, data]);
+                    
+                    // Try to parse response
+                    try {
+                        // Simple parsing - just check if we got data
+                        socket.destroy();
+                        resolve({ 
+                            players: 0, 
+                            maxPlayers: 20, 
+                            motd: 'Minecraft Server',
+                            online: true
+                        });
+                    } catch (err) {
+                        socket.destroy();
+                        resolve({ players: 0, maxPlayers: 20, motd: '', online: true });
+                    }
+                });
             });
 
-            socket.on('error', () => {
+            socket.on('error', (err) => {
+                console.log(`[ProxyMonitor] Error pinging ${host}:${port}:`, err.message);
                 resolve(null);
             });
 
             socket.on('timeout', () => {
                 socket.destroy();
+                console.log(`[ProxyMonitor] Timeout pinging ${host}:${port}`);
                 resolve(null);
             });
         });

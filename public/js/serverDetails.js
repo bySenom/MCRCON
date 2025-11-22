@@ -250,13 +250,6 @@ const ServerDetails = (function() {
                 PluginManager.setSelectedServer(currentServer.id);
             }
             
-            // Show the details tab
-            const detailsTab = document.querySelector('[data-tab="server-details"]');
-            if (detailsTab) {
-                detailsTab.style.display = 'block';
-                detailsTab.textContent = currentServer.name;
-            }
-            
             switchTab('server-details');
             switchSubTab('overview');
             
@@ -289,12 +282,41 @@ const ServerDetails = (function() {
             restartBtn.style.display = 'none';
         }
 
-        // Show/hide network tab for proxy servers
+        // Show/hide tabs based on server type
         const isProxy = server.type === 'bungeecord' || server.type === 'waterfall' || server.type === 'velocity';
+        
+        // Network tab: Only for proxy servers
         const networkTab = document.querySelector('[data-subtab="network"]');
         if (networkTab) {
             networkTab.style.display = isProxy ? 'inline-block' : 'none';
         }
+        
+        // World tab: Hide for proxy servers
+        const worldTab = document.querySelector('[data-subtab="world"]');
+        if (worldTab) {
+            worldTab.style.display = isProxy ? 'none' : 'inline-block';
+        }
+        
+        // Proxy settings section in Settings tab: Only for proxy servers
+        const proxySettingsSection = document.querySelector('#proxySettingsForm')?.closest('div[style*="background: var(--bg-secondary)"]');
+        if (proxySettingsSection) {
+            proxySettingsSection.style.display = isProxy ? 'block' : 'none';
+        }
+        
+        // Gamerules section in Settings tab: Hide for proxy servers
+        const gamerarulesSection = document.querySelector('#gamerules-list')?.closest('div[style*="background: var(--bg-secondary)"]');
+        if (gamerarulesSection) {
+            gamerarulesSection.style.display = isProxy ? 'none' : 'block';
+        }
+        
+        // World Border section in Settings tab: Hide for proxy servers
+        const worldBorderSection = document.querySelector('#world-border-config')?.closest('div[style*="background: var(--bg-secondary)"]');
+        if (worldBorderSection) {
+            worldBorderSection.style.display = isProxy ? 'none' : 'block';
+        }
+        
+        // Plugins tab: Always show, but content will be filtered
+        // (Proxy plugins vs server plugins)
 
         // Overview
         document.getElementById('detailStatus').textContent = server.status === 'running' ? '🟢 Online' : '🔴 Offline';
@@ -873,6 +895,16 @@ const ServerDetails = (function() {
                 loadServerPlugins(currentServer.id);
             } else if (subtabName === 'backups') {
                 loadBackups();
+            } else if (subtabName === 'settings') {
+                // Load gamerules and world border for settings tab
+                if (typeof WorldManager !== 'undefined') {
+                    WorldManager.init(currentServer.id);
+                }
+                // Load proxy settings if this is a proxy server
+                const isProxy = currentServer.type === 'bungeecord' || currentServer.type === 'waterfall' || currentServer.type === 'velocity';
+                if (isProxy && typeof loadProxySettings !== 'undefined') {
+                    loadProxySettings();
+                }
             } else if (subtabName === 'world') {
                 if (typeof WorldManager !== 'undefined') {
                     WorldManager.init(currentServer.id);
@@ -1100,7 +1132,13 @@ const ServerDetails = (function() {
             if (source) params.append('source', source);
             
             // Auto-determine type based on server type
-            if (currentServer.type === 'paper' || currentServer.type === 'spigot') {
+            if (currentServer.type === 'bungeecord' || currentServer.type === 'waterfall') {
+                // BungeeCord/Waterfall plugins (use 'bungeecord' type for search)
+                params.append('type', 'bungeecord');
+            } else if (currentServer.type === 'velocity') {
+                // Velocity plugins
+                params.append('type', 'velocity');
+            } else if (currentServer.type === 'paper' || currentServer.type === 'spigot') {
                 params.append('type', 'paper');
             } else if (currentServer.type === 'fabric') {
                 params.append('type', 'fabric');

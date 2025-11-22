@@ -118,9 +118,13 @@
             const data = await response.json();
 
             if (data.success) {
+                console.log('[ProxyStatus] Loaded backend status:', data.backends);
                 updateBackendServerStatus(data.backends);
+            } else {
+                console.error('[ProxyStatus] Failed to load:', data.message);
             }
         } catch (error) {
+            console.error('[ProxyStatus] Error loading status:', error);
         }
     }
 
@@ -128,14 +132,19 @@
      * Update backend server status in UI
      */
     function updateBackendServerStatus(backends) {
+        console.log('[ProxyStatus] Updating UI with backends:', backends);
+        
         backends.forEach(backend => {
             const card = document.querySelector(`[data-server-name="${backend.name}"]`);
+            console.log(`[ProxyStatus] Looking for card with name: ${backend.name}`, card ? 'Found' : 'Not found');
+            
             if (card) {
                 // Update status indicator
                 const statusEl = card.querySelector('.server-status');
                 if (statusEl) {
                     statusEl.textContent = backend.online ? '🟢' : '🔴';
                     statusEl.title = backend.online ? 'Online' : 'Offline';
+                    console.log(`[ProxyStatus] Updated ${backend.name} status:`, backend.online ? 'Online' : 'Offline');
                 }
 
                 // Update player count
@@ -800,6 +809,315 @@
         }
     }
 
+    /**
+     * Switch tabs in backend server modal
+     */
+    function switchBackendModalTab(tabName) {
+        // Update tab buttons
+        document.querySelectorAll('.backend-modal-tab').forEach(btn => {
+            if (btn.dataset.tab === tabName) {
+                btn.style.borderBottom = '3px solid var(--primary)';
+                btn.style.color = 'var(--primary)';
+            } else {
+                btn.style.borderBottom = '3px solid transparent';
+                btn.style.color = 'var(--text-secondary)';
+            }
+        });
+
+        // Update tab content
+        document.querySelectorAll('.backend-modal-tab-content').forEach(content => {
+            content.style.display = 'none';
+        });
+
+        const targetTab = document.getElementById(`backend-${tabName}-tab`);
+        if (targetTab) {
+            targetTab.style.display = 'block';
+        }
+
+        // Load data if needed
+        if (currentEditingServer) {
+            if (tabName === 'gamerules') {
+                loadBackendGamerules(currentEditingServer);
+            } else if (tabName === 'worldborder') {
+                loadBackendWorldBorder(currentEditingServer);
+            }
+        }
+    }
+
+    /**
+     * Load gamerules for backend server
+     */
+    async function loadBackendGamerules(serverName) {
+        const container = document.getElementById('backend-gamerules-list');
+        
+        if (!serverName) {
+            container.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-secondary); background: var(--bg-tertiary); border-radius: 8px;">Wähle einen Backend-Server zum Bearbeiten aus</div>';
+            return;
+        }
+
+        container.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-secondary);">Lade Gamerules...</div>';
+
+        try {
+            // Parse server address to get the actual server ID
+            const backendAddress = document.getElementById('backendServerAddress').value;
+            const [host, port] = backendAddress.split(':');
+            
+            // Try to find the corresponding managed server
+            const token = localStorage.getItem('auth_token');
+            const serversResponse = await fetch(`${API_URL}/servers`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const serversData = await serversResponse.json();
+            
+            // Find server by port
+            const matchingServer = serversData.servers?.find(s => s.port === parseInt(port));
+            
+            if (!matchingServer) {
+                container.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-secondary); background: var(--bg-tertiary); border-radius: 8px;">Backend-Server nicht als verwalteter Server gefunden. Gamerules können nur für Server in der Server-Liste verwaltet werden.</div>';
+                return;
+            }
+
+            // Load gamerules from the actual server
+            const response = await fetch(`${API_URL}/servers/${matchingServer.id}/world/gamerules`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+
+            if (data.success && data.gamerules) {
+                renderBackendGamerules(data.gamerules, matchingServer.id);
+            } else {
+                container.innerHTML = `<div style="padding: 2rem; text-align: center; color: var(--text-secondary); background: var(--bg-tertiary); border-radius: 8px;">${data.message || 'Konnte Gamerules nicht laden'}</div>`;
+            }
+        } catch (error) {
+            container.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--danger); background: var(--bg-tertiary); border-radius: 8px;">Fehler beim Laden der Gamerules</div>';
+        }
+    }
+
+    /**
+     * Render backend server gamerules
+     */
+    function renderBackendGamerules(gamerules, serverId) {
+        const container = document.getElementById('backend-gamerules-list');
+        
+        const html = `
+            <div style="display: grid; gap: 1rem;">
+                ${Object.entries(gamerules).map(([rule, value]) => `
+                    <div class="gamerule-item" data-rule="${rule}" style="background: var(--bg-tertiary); padding: 1rem; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong style="color: var(--text-primary);">${rule}</strong>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                                ${getGameruleDescription(rule)}
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            ${typeof value === 'boolean' 
+                                ? `<label style="display: flex; align-items: center; gap: 0.5rem;">
+                                       <input type="checkbox" ${value ? 'checked' : ''} onchange="setBackendGamerule('${serverId}', '${rule}', this.checked)">
+                                       <span style="font-size: 0.9rem;">${value ? 'An' : 'Aus'}</span>
+                                   </label>`
+                                : `<input type="number" value="${value}" style="width: 100px; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-secondary);" onchange="setBackendGamerule('${serverId}', '${rule}', this.value)">`
+                            }
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        
+        container.innerHTML = html;
+    }
+
+    /**
+     * Get gamerule description
+     */
+    function getGameruleDescription(rule) {
+        const descriptions = {
+            'announceAdvancements': 'Zeigt Fortschritte im Chat an',
+            'commandBlockOutput': 'Zeigt Command Block Ausgaben an',
+            'disableElytraMovementCheck': 'Deaktiviert Elytra-Bewegungsprüfung',
+            'doDaylightCycle': 'Tag/Nacht-Zyklus',
+            'doEntityDrops': 'Entities droppen Items',
+            'doFireTick': 'Feuer breitet sich aus',
+            'doImmediateRespawn': 'Sofortiges Respawnen',
+            'doInsomnia': 'Phantome spawnen',
+            'doLimitedCrafting': 'Nur freigeschaltete Rezepte',
+            'doMobLoot': 'Mobs droppen Loot',
+            'doMobSpawning': 'Mobs spawnen',
+            'doPatrolSpawning': 'Patrouillen spawnen',
+            'doTileDrops': 'Blöcke droppen Items',
+            'doTraderSpawning': 'Wandernde Händler spawnen',
+            'doWeatherCycle': 'Wetter ändert sich',
+            'drowningDamage': 'Ertrinken verursacht Schaden',
+            'fallDamage': 'Fallschaden',
+            'fireDamage': 'Feuerschaden',
+            'forgiveDeadPlayers': 'Mobs vergessen tote Spieler',
+            'freezeDamage': 'Gefrierschaden',
+            'keepInventory': 'Inventar behalten beim Tod',
+            'logAdminCommands': 'Admin-Befehle loggen',
+            'maxCommandChainLength': 'Max. Command Chain Länge',
+            'maxEntityCramming': 'Max. Entity Cramming',
+            'mobGriefing': 'Mobs können Blöcke zerstören',
+            'naturalRegeneration': 'Natürliche Regeneration',
+            'playersSleepingPercentage': 'Prozent schlafender Spieler für Nacht-Skip',
+            'randomTickSpeed': 'Random Tick Speed',
+            'reducedDebugInfo': 'Reduzierte Debug-Infos',
+            'sendCommandFeedback': 'Befehlsfeedback anzeigen',
+            'showDeathMessages': 'Todesnachrichten anzeigen',
+            'spawnRadius': 'Spawn-Radius',
+            'spectatorsGenerateChunks': 'Zuschauer generieren Chunks',
+            'universalAnger': 'Universelle Wut (Piglin etc.)'
+        };
+        return descriptions[rule] || 'Keine Beschreibung verfügbar';
+    }
+
+    /**
+     * Set backend server gamerule
+     */
+    async function setBackendGamerule(serverId, rule, value) {
+        try {
+            const token = localStorage.getItem('auth_token');
+            const response = await fetch(`${API_URL}/servers/${serverId}/world/gamerules`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ rule, value })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                console.log(`Gamerule ${rule} erfolgreich gesetzt`);
+            } else {
+                alert(data.message || 'Fehler beim Setzen der Gamerule');
+            }
+        } catch (error) {
+            alert('Fehler beim Setzen der Gamerule');
+        }
+    }
+
+    /**
+     * Filter gamerules
+     */
+    function filterBackendGamerules() {
+        const search = document.getElementById('backendGameruleSearch').value.toLowerCase();
+        const items = document.querySelectorAll('.gamerule-item');
+        
+        items.forEach(item => {
+            const rule = item.dataset.rule.toLowerCase();
+            item.style.display = rule.includes(search) ? 'flex' : 'none';
+        });
+    }
+
+    /**
+     * Load world border for backend server
+     */
+    async function loadBackendWorldBorder(serverName) {
+        const container = document.getElementById('backend-world-border-config');
+        
+        if (!serverName) {
+            container.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-secondary); background: var(--bg-tertiary); border-radius: 8px;">Wähle einen Backend-Server zum Bearbeiten aus</div>';
+            return;
+        }
+
+        container.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-secondary);">Lade World Border...</div>';
+
+        try {
+            const backendAddress = document.getElementById('backendServerAddress').value;
+            const [host, port] = backendAddress.split(':');
+            
+            const token = localStorage.getItem('auth_token');
+            const serversResponse = await fetch(`${API_URL}/servers`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const serversData = await serversResponse.json();
+            
+            const matchingServer = serversData.servers?.find(s => s.port === parseInt(port));
+            
+            if (!matchingServer) {
+                container.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-secondary); background: var(--bg-tertiary); border-radius: 8px;">Backend-Server nicht als verwalteter Server gefunden.</div>';
+                return;
+            }
+
+            const response = await fetch(`${API_URL}/servers/${matchingServer.id}/world/border`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                renderBackendWorldBorder(data.border, matchingServer.id);
+            } else {
+                container.innerHTML = `<div style="padding: 2rem; text-align: center; color: var(--text-secondary); background: var(--bg-tertiary); border-radius: 8px;">${data.message || 'Konnte World Border nicht laden'}</div>`;
+            }
+        } catch (error) {
+            container.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--danger); background: var(--bg-tertiary); border-radius: 8px;">Fehler beim Laden der World Border</div>';
+        }
+    }
+
+    /**
+     * Render backend world border
+     */
+    function renderBackendWorldBorder(border, serverId) {
+        const container = document.getElementById('backend-world-border-config');
+        
+        const html = `
+            <form onsubmit="setBackendWorldBorder(event, '${serverId}')" style="display: grid; gap: 1rem; background: var(--bg-tertiary); padding: 1.5rem; border-radius: 8px;">
+                <div class="form-group">
+                    <label>Aktuelle Größe: <strong>${border.size || 'Unbekannt'}</strong> Blöcke</label>
+                </div>
+                <div class="form-group">
+                    <label for="backendBorderSize">Neue Größe (Blöcke):</label>
+                    <input type="number" id="backendBorderSize" value="${border.size || 59999968}" min="1" max="59999968" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-secondary);">
+                    <small class="help-text">Standard: 59999968 Blöcke (Maximum)</small>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="backendBorderCenterX">Zentrum X:</label>
+                        <input type="number" id="backendBorderCenterX" value="${border.centerX || 0}" step="0.1" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-secondary);">
+                    </div>
+                    <div class="form-group">
+                        <label for="backendBorderCenterZ">Zentrum Z:</label>
+                        <input type="number" id="backendBorderCenterZ" value="${border.centerZ || 0}" step="0.1" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-secondary);">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">🌐 World Border setzen</button>
+            </form>
+        `;
+        
+        container.innerHTML = html;
+    }
+
+    /**
+     * Set backend world border
+     */
+    async function setBackendWorldBorder(event, serverId) {
+        event.preventDefault();
+        
+        const size = parseInt(document.getElementById('backendBorderSize').value);
+        const centerX = parseFloat(document.getElementById('backendBorderCenterX').value);
+        const centerZ = parseFloat(document.getElementById('backendBorderCenterZ').value);
+        
+        try {
+            const token = localStorage.getItem('auth_token');
+            const response = await fetch(`${API_URL}/servers/${serverId}/world/border`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ size, centerX, centerZ })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                alert('World Border erfolgreich gesetzt!');
+            } else {
+                alert(data.message || 'Fehler beim Setzen der World Border');
+            }
+        } catch (error) {
+            alert('Fehler beim Setzen der World Border');
+        }
+    }
+
     // Export functions to global scope
     window.initializeProxyManagement = initializeProxyManagement;
     window.showAddBackendServerModal = showAddBackendServerModal;
@@ -815,5 +1133,11 @@
     window.quickAddServer = quickAddServer;
     window.createAndAddServer = createAndAddServer;
     window.loadServerVersions = loadServerVersions;
+    window.switchBackendModalTab = switchBackendModalTab;
+    window.filterBackendGamerules = filterBackendGamerules;
+    window.loadBackendGamerules = loadBackendGamerules;
+    window.loadBackendWorldBorder = loadBackendWorldBorder;
+    window.setBackendGamerule = setBackendGamerule;
+    window.setBackendWorldBorder = setBackendWorldBorder;
 
 })();

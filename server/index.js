@@ -4222,7 +4222,7 @@ const httpServer = server.listen(PORT, () => {
     // Start monitoring for running proxy servers
     const servers = serverManager.getAllServers();
     servers.forEach(server => {
-        if ((server.type === 'bungeecord' || server.type === 'waterfall') && server.status === 'running') {
+        if ((server.type === 'bungeecord' || server.type === 'waterfall' || server.type === 'velocity') && server.status === 'running') {
             proxyMonitor.startMonitoring(server);
         }
     });

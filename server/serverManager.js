@@ -456,6 +456,80 @@ try = []
         }
     }
 
+    /**
+     * Stop all backend servers for a proxy
+     */
+    async stopBackendServers(proxyServerId) {
+        try {
+            console.log(`[Proxy] stopBackendServers called for server ID: ${proxyServerId}`);
+            
+            const proxyServer = this.servers.get(proxyServerId);
+            if (!proxyServer) {
+                console.error('[Proxy] Proxy server not found for auto-stop backend servers');
+                return;
+            }
+
+            console.log(`[Proxy] Auto-stopping backend servers for ${proxyServer.name} (${proxyServer.type})...`);
+
+            const proxyManager = require('./proxyManager');
+            const backendServers = await proxyManager.getBackendServers(proxyServer.path, proxyServer.type);
+            
+            if (!backendServers || backendServers.length === 0) {
+                console.log(`[Proxy] No backend servers configured for ${proxyServer.name}`);
+                return;
+            }
+
+            const stopPromises = [];
+
+            for (const backend of backendServers) {
+                // Extract port from address
+                const match = backend.address.match(/:(\d+)$/);
+                if (!match) continue;
+
+                const port = parseInt(match[1], 10);
+                
+                // Find server in database by port
+                const matchingServer = Array.from(this.servers.values()).find(s => s.port === port);
+                
+                if (!matchingServer) {
+                    console.warn(`[Proxy] Backend server not found for port ${port} (${backend.name})`);
+                    continue;
+                }
+
+                if (matchingServer.status !== 'running') {
+                    console.log(`[Proxy] Backend server ${matchingServer.name} already stopped`);
+                    continue;
+                }
+
+                console.log(`[Proxy] Stopping backend server: ${matchingServer.name} (port ${port})`);
+                
+                // Stop server without triggering backend stop (prevent recursion)
+                const stopPromise = this.stopServer(matchingServer.id, true)
+                    .then(() => {
+                        console.log(`[Proxy] ✓ Backend server ${matchingServer.name} stopped successfully`);
+                    })
+                    .catch(err => {
+                        console.error(`[Proxy] ✗ Failed to stop backend server ${matchingServer.name}:`, err.message);
+                    });
+                
+                stopPromises.push(stopPromise);
+                
+                // Small delay between stop commands
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+
+            // Wait for all backend servers to stop
+            if (stopPromises.length > 0) {
+                console.log(`[Proxy] Waiting for ${stopPromises.length} backend server(s) to stop...`);
+                await Promise.allSettled(stopPromises);
+            }
+
+            console.log(`[Proxy] Backend server auto-stop complete for ${proxyServer.name}`);
+        } catch (error) {
+            console.error('[Proxy] Error auto-stopping backend servers:', error.message);
+        }
+    }
+
     async deleteServer(serverId) {
         const server = this.servers.get(serverId);
         if (!server) {
@@ -653,7 +727,7 @@ try = []
         return server;
     }
 
-    async stopServer(serverId) {
+    async stopServer(serverId, skipBackends = false) {
         const server = this.servers.get(serverId);
         if (!server) {
             throw new Error('Server not found');
@@ -662,6 +736,12 @@ try = []
         const process = this.processes.get(serverId);
         if (!process) {
             throw new Error('Server is not running');
+        }
+
+        // Stop backend servers if this is a proxy server (unless we're already stopping from a proxy)
+        if (!skipBackends && (server.type === 'bungeecord' || server.type === 'waterfall' || server.type === 'velocity')) {
+            console.log(`[Proxy] Stopping backend servers for proxy ${server.name}...`);
+            await this.stopBackendServers(serverId);
         }
 
         // Send stop command

@@ -276,28 +276,49 @@ class ServerDownloader {
 
     async getAvailableVersions(type) {
         try {
+            // Helper function to sort versions in descending order (newest first)
+            const sortVersions = (versions) => {
+                return [...versions].sort((a, b) => {
+                    const aParts = a.split('.').map(part => {
+                        const match = part.match(/^(\d+)/);
+                        return match ? Number(match[1]) : 0;
+                    });
+                    const bParts = b.split('.').map(part => {
+                        const match = part.match(/^(\d+)/);
+                        return match ? Number(match[1]) : 0;
+                    });
+                    for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+                        const aVal = aParts[i] || 0;
+                        const bVal = bParts[i] || 0;
+                        if (aVal !== bVal) return bVal - aVal; // Descending: newest first
+                    }
+                    return 0;
+                });
+            };
+
             switch (type.toLowerCase()) {
                 case 'vanilla':
                 case 'paper': {
                     const { data: paperVersions } = await axios.get(`${this.apis.paper}`);
-                    return paperVersions.versions;
+                    return sortVersions(paperVersions.versions);
                 }
                 case 'waterfall': {
                     const { data: waterfallVersions } = await axios.get(`${this.apis.waterfall}`);
-                    return waterfallVersions.versions;
+                    return sortVersions(waterfallVersions.versions);
                 }
                 case 'velocity': {
                     const { data: velocityVersions } = await axios.get(`${this.apis.velocity}`);
-                    return velocityVersions.versions;
+                    return sortVersions(velocityVersions.versions);
                 }
                 case 'bungeecord':
                     return ['latest']; // BungeeCord only has latest from CI
                 case 'fabric': {
                     const { data: fabricVersions } = await axios.get(`${this.apis.fabric}/versions/game`);
-                    return fabricVersions.filter(v => v.stable).map(v => v.version);
+                    const stableVersions = fabricVersions.filter(v => v.stable).map(v => v.version);
+                    return sortVersions(stableVersions);
                 }
                 default:
-                    return ['1.20.4', '1.20.2', '1.20.1', '1.19.4', '1.19.2']; // Fallback
+                    return sortVersions(['1.20.4', '1.20.2', '1.20.1', '1.19.4', '1.19.2']); // Fallback
             }
         } catch (error) {
             console.error('Error fetching versions:', error);
