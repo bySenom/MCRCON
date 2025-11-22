@@ -156,9 +156,23 @@ class Tutorial {
         // Switch to correct tab if needed
         if (step.showOnTab) {
             const tabButton = document.querySelector(`[data-tab="${step.showOnTab}"]`);
-            if (tabButton) tabButton.click();
+            if (tabButton && !tabButton.classList.contains('active')) {
+                tabButton.click();
+                // Wait for tab switch animation to complete
+                setTimeout(() => {
+                    this.renderStepContent(stepIndex, step);
+                }, 300);
+                return;
+            }
         }
 
+        this.renderStepContent(stepIndex, step);
+    }
+
+    /**
+     * Render the step content (split from showStep for async tab switching)
+     */
+    renderStepContent(stepIndex, step) {
         // Clear previous highlights
         document.querySelectorAll('.tutorial-highlight').forEach(el => {
             el.classList.remove('tutorial-highlight');
@@ -189,6 +203,9 @@ class Tutorial {
                     `;
                     document.head.appendChild(style);
                 }
+                
+                // Scroll target into view
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
 
