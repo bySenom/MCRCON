@@ -9,10 +9,9 @@ build/
 # Minecraft Server Files
 minecraft_servers/
 
-# Database Files
+# Database Files (user data)
 data/servers.json
 data/users.json
-data/templates.json
 data/tasks.json
 data/webhooks.json
 

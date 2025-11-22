@@ -1,0 +1,164 @@
+{
+  "templates": [
+    {
+      "id": "vanilla-small",
+      "name": "Vanilla - Klein",
+      "description": "Perfekt für 1-5 Spieler, minimale Ressourcen",
+      "type": "vanilla",
+      "version": "latest",
+      "memory": "2G",
+      "port": 25565,
+      "rconPort": 25575,
+      "settings": {
+        "max-players": 5,
+        "view-distance": 8,
+        "simulation-distance": 6
+      },
+      "icon": "🌱"
+    },
+    {
+      "id": "vanilla-medium",
+      "name": "Vanilla - Mittel",
+      "description": "Für 5-15 Spieler, ausgewogene Performance",
+      "type": "vanilla",
+      "version": "latest",
+      "memory": "4G",
+      "port": 25566,
+      "rconPort": 25576,
+      "settings": {
+        "max-players": 15,
+        "view-distance": 10,
+        "simulation-distance": 8
+      },
+      "icon": "🌿"
+    },
+    {
+      "id": "paper-small",
+      "name": "Paper - Klein",
+      "description": "Optimiert für 1-10 Spieler mit Plugins",
+      "type": "paper",
+      "version": "latest",
+      "memory": "2G",
+      "port": 25567,
+      "rconPort": 25577,
+      "settings": {
+        "max-players": 10,
+        "view-distance": 8,
+        "simulation-distance": 6
+      },
+      "recommendedPlugins": [
+        "EssentialsX",
+        "LuckPerms",
+        "WorldEdit"
+      ],
+      "icon": "📄"
+    },
+    {
+      "id": "paper-medium",
+      "name": "Paper - Mittel",
+      "description": "Für 10-30 Spieler, viele Plugins möglich",
+      "type": "paper",
+      "version": "latest",
+      "memory": "4G",
+      "port": 25568,
+      "rconPort": 25578,
+      "settings": {
+        "max-players": 30,
+        "view-distance": 10,
+        "simulation-distance": 8
+      },
+      "recommendedPlugins": [
+        "EssentialsX",
+        "LuckPerms",
+        "WorldEdit",
+        "WorldGuard",
+        "Vault"
+      ],
+      "icon": "📋"
+    },
+    {
+      "id": "paper-large",
+      "name": "Paper - Groß",
+      "description": "Für 30-100+ Spieler, High-Performance",
+      "type": "paper",
+      "version": "latest",
+      "memory": "8G",
+      "port": 25569,
+      "rconPort": 25579,
+      "settings": {
+        "max-players": 100,
+        "view-distance": 12,
+        "simulation-distance": 10
+      },
+      "recommendedPlugins": [
+        "EssentialsX",
+        "LuckPerms",
+        "WorldEdit",
+        "WorldGuard",
+        "Vault",
+        "CoreProtect",
+        "DiscordSRV"
+      ],
+      "icon": "📚"
+    },
+    {
+      "id": "fabric-small",
+      "name": "Fabric - Klein (Modded)",
+      "description": "Für 1-5 Spieler mit leichten Mods",
+      "type": "fabric",
+      "version": "latest",
+      "memory": "4G",
+      "port": 25570,
+      "rconPort": 25580,
+      "settings": {
+        "max-players": 5,
+        "view-distance": 8,
+        "simulation-distance": 6
+      },
+      "recommendedPlugins": [
+        "Fabric API",
+        "Lithium",
+        "Phosphor"
+      ],
+      "icon": "🧵"
+    },
+    {
+      "id": "fabric-large",
+      "name": "Fabric - Groß (Modded)",
+      "description": "Für 5-20 Spieler mit vielen Mods (FTB, Create, etc.)",
+      "type": "fabric",
+      "version": "latest",
+      "memory": "8G",
+      "port": 25571,
+      "rconPort": 25581,
+      "settings": {
+        "max-players": 20,
+        "view-distance": 10,
+        "simulation-distance": 8
+      },
+      "recommendedPlugins": [
+        "Fabric API",
+        "Lithium",
+        "Phosphor",
+        "ServerCore"
+      ],
+      "icon": "🧶"
+    },
+    {
+      "id": "custom",
+      "name": "Benutzerdefiniert",
+      "description": "Eigene Konfiguration erstellen",
+      "type": "vanilla",
+      "version": "latest",
+      "memory": "2G",
+      "port": 25565,
+      "rconPort": 25575,
+      "settings": {
+        "max-players": 20,
+        "view-distance": 10,
+        "simulation-distance": 8
+      },
+      "icon": "⚙️"
+    }
+  ]
+}
