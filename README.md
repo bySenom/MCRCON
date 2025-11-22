@@ -5,13 +5,13 @@
 [![Node.js](https://img.shields.io/badge/Node.js-16%2B-green.svg)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/Version-3.16.0-orange.svg)](package.json)
-[![GitHub Pages](https://img.shields.io/badge/Docs-GitHub%20Pages-blue.svg)](https://yourusername.github.io/MCRCON/)
+[![GitHub Pages](https://img.shields.io/badge/Docs-GitHub%20Pages-blue.svg)](https://bySenom.github.io/MCRCON/)
 
 > 🚀 **Production-Ready** - Complete with authentication, rate limiting, security headers, first-time tutorial, and deployment guides.
 
 ---
 
-## 📖 [Full Documentation](https://yourusername.github.io/MCRCON/)
+## 📖 [Full Documentation](https://bySenom.github.io/MCRCON/)
 
 Visit our GitHub Pages for comprehensive documentation, installation guides, and API reference.
 
