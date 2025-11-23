@@ -2,6 +2,24 @@
 
 All notable changes to the Minecraft Server Manager will be documented in this file.
 
+## [v3.17.0] - Proxy Auto-Stop Backend Servers - 2025-11-23
+
+### Added
+- **Auto-Stop Backend Servers**: Backend servers are now automatically stopped when proxy stops
+  - New `stopBackendServers()` function mirrors auto-start functionality
+  - Graceful shutdown with 500ms delay between each server
+  - Prevents backend servers from remaining running after proxy shutdown
+  - Complete proxy lifecycle management (auto-start + auto-stop)
+  
+### Changed
+- `stopServer()` function now accepts `skipBackends` parameter to prevent infinite recursion
+- Backend servers are stopped before proxy shuts down for clean disconnection
+- Improved proxy shutdown sequence for better server lifecycle control
+
+### Fixed
+- Backend servers no longer remain running when proxy is stopped
+- Resolved recursion issue when stopping proxy and backend servers
+
 ## [v3.16.0] - Host/IP Configuration - 2025-11-22
 
 ### Added
